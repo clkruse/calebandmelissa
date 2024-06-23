@@ -168,16 +168,26 @@ h1, h2 {
     }
 }
 
+.welcome-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    height: calc(45vh - 30px);
+    margin-bottom: 20px;
+}
+
 .region-card {
     position: relative;
     border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
-    height: calc(50vh - 30px);
+    height: calc(33vh - 30px);
     margin-bottom: 20px;
+    margin-top: 5vh;
 }
 
-.region-card img {
+.region-card img, .welcome-card img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -188,26 +198,23 @@ h1, h2 {
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background-color: rgba(255, 255, 255, 0.8);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
     padding: 20px;
     z-index: 2;
+    transition: opacity 0.3s ease;
+    background-color: rgba(255, 255, 255, 0.5);
 }
 
 .region-title h2 {
     margin: 0;
-    color: #333;
+    color: #000000;
     font-family: Helvetica, serif;
     font-weight: bold;
     font-size: 2.5em;
     text-transform: uppercase;
+    text-align: left;
 }
 
-.region-content {
+.region-content, .card-content {
     position: absolute;
     top: 0;
     left: 0;
@@ -224,9 +231,10 @@ h1, h2 {
     transition: opacity 0.3s ease;
     padding: 20px;
     z-index: 1;
+    font-family: 'Libre Caslon Text', serif;
 }
 
-.region-content h2 {
+.region-content h2, .card-content h2 {
     color: #d97856;
     font-style: normal;
     margin-bottom: 10px;
@@ -234,30 +242,41 @@ h1, h2 {
     font-size: 2em;
 }
 
-.region-content p {
+.region-content p, .card-content p {
     font-style: italic;
     font-size: 1.2em;
 }
 
 @media (min-width: 768px) {
-    .region-card:hover .region-title {
+    .region-card:hover .region-title,
+    .welcome-card:hover .region-title {
         opacity: 0;
     }
-    .region-card:hover .region-content {
+    .region-card:hover .region-content,
+    .region-card:hover .card-content,
+    .welcome-card:hover .card-content {
         opacity: 1;
     }
 }
 
 @media (max-width: 767px) {
-    .region-card.active .region-title {
+    .region-card.active .region-title,
+    .welcome-card.active .region-title {
         opacity: 0;
     }
-    .region-card.active .region-content {
+    .region-card.active .region-content,
+    .region-card.active .card-content,
+    .welcome-card.active .card-content {
         opacity: 1;
     }
-    .region-card {
-        height: calc(40vh - 30px);
-    }
+}
+
+.regional-divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #bababa35, transparent);
+    margin: 40px 0;
+    border: none;
 }
 
 .get-directions-btn {

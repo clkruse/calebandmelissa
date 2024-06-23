@@ -56,9 +56,14 @@ fetch('locations.json')
             loc.name !== "Oakland Airport"
         );
     
-        regionOrder.forEach(regionName => {
+        regionOrder.forEach((regionName, index) => {
             const overviewLocation = overviewLocations.find(loc => loc.name === regionName);
             if (overviewLocation) {
+                // Add divider before each region
+                const divider = document.createElement('hr');
+                divider.className = 'regional-divider';
+                locationsContainer.appendChild(divider);
+    
                 createRegionCard(overviewLocation);
                 const regionLocations = nonOverviewLocations.filter(loc => loc.region === regionName);
                 
@@ -80,14 +85,14 @@ function clearRoutes() {
 
 function createWelcomeCard(welcomeLocation, locationsData) {
     const welcomeCard = document.createElement('div');
-    welcomeCard.className = 'card welcome-card';
+    welcomeCard.className = 'welcome-card';
     welcomeCard.innerHTML = `
         <img src="../img/welcome.jpg" alt="Welcome to Northern California">
-        <div class="card-title">
-            <h2>WELCOME TO NORTHERN CALIFORNIA!</h2>
+        <div class="region-title">
+            <h2>WELCOME!</h2>
         </div>
         <div class="card-content">
-            <h2>Welcome to Northern California!</h2>
+            <h2>Welcome to Northern California</h2>
             <p>${welcomeLocation.description}</p>
         </div>
     `;
@@ -102,6 +107,7 @@ function createWelcomeCard(welcomeLocation, locationsData) {
         showAirportRoutes(locationsData);
     });
 }
+
 
 function showAirportRoutes(locationsData) {
     const sfoAirport = locationsData.find(loc => loc.name === "San Francisco Airport");
