@@ -113,7 +113,7 @@
     },
     {
         "name": "Lands End",
-        "region": "SF",
+        "region": "San Francisco",
         "description": "This is one of the most beautiful places in San Francisco. If you walk along the path for a ways, you'll catch stunning views of the coast and of the Golden Gate Bridge.",
         "coordinates": [-122.51161819858251, 37.7802594477183],
         "order": 1
