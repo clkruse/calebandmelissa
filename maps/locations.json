@@ -42,7 +42,7 @@
         "coordinates": [-122.2112802196859, 37.71192750221407]
     },
     {
-        "name": "Home",
+        "name": "Our Home",
         "region": "East Bay",
         "description": "We live in the Rockridge neighborhood between Oakland and Berkeley. The neighborhood has an abundance of good restaurants and coffee. Come by for a visit!",
         "coordinates": [-122.25204220723741, 37.84712091925696],
@@ -115,6 +115,13 @@
         "name": "Lands End",
         "region": "San Francisco",
         "description": "This is one of the most beautiful places in San Francisco. If you walk along the path for a ways, you'll catch stunning views of the coast and of the Golden Gate Bridge.",
+        "coordinates": [-122.51161819858251, 37.7802594477183],
+        "order": 1
+    },
+    {
+        "name": "The Interval",
+        "region": "San Francisco",
+        "description": "The home of the Long Now Foundation, The Interval is a museum, bar, and coffee shop all in one.",
         "coordinates": [-122.51161819858251, 37.7802594477183],
         "order": 1
     }
