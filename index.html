@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,9 +12,11 @@
     <meta property="og:type" content="website">
 
     <title>M&C - August 3</title>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
     <div class="container">
         <div class="grid">
@@ -27,14 +30,17 @@
                     <p>Take a look at all the wedding details here. We can't wait to celebrate with you!</p>
                 </div>
             </div>
-            <div id="registry" class="card" data-link="https://www.heathceramics.com/apps/registry/melissa-caleb-s-wedding?shared_url=true">
+            <div id="registry" class="card"
+                data-link="https://www.heathceramics.com/apps/registry/melissa-caleb-s-wedding?shared_url=true">
                 <img src="img/registry.jpg" alt="Registry items">
                 <div class="card-title">
                     <h2>REGISTRY</h2>
                 </div>
                 <div class="card-content">
                     <h2>Heath Ceramics Registry</h2>
-                    <p>Sharing a homemade meal at a table full of family & friends is one of our favorite things to do. We have created a registry with Heath Ceramics, a Bay Area studio that we love.<br>We hope to use these pieces with you soon!</p>
+                    <p>Sharing a homemade meal at a table full of family & friends is one of our favorite things to do.
+                        We have created a registry with Heath Ceramics, a Bay Area studio that we love.<br>We hope to
+                        use these pieces with you soon!</p>
                 </div>
             </div>
             <div id="places-to-visit" class="card" data-link="maps">
@@ -54,7 +60,8 @@
                 </div>
                 <div class="card-content">
                     <h2>How It's Made</h2>
-                    <p>We had fun designing our invitation with a local letterpress printer. Take a look behind the scenes at how the invitation was made.</p>
+                    <p>We had fun designing our invitation with a local letterpress printer. Take a look behind the
+                        scenes at how the invitation was made.</p>
                 </div>
             </div>
         </div>
@@ -63,12 +70,12 @@
         const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 
         document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('click', function(e) {
+            card.addEventListener('click', function (e) {
                 e.preventDefault();
                 if (isTouchDevice) {
                     if (card.classList.contains('active')) {
-                        // If this card was already active, open the link in a new tab
-                        window.open(this.dataset.link, '_blank');
+                        // If this card was already active, open the link in the same tab
+                        window.location.href = this.dataset.link;
                     } else {
                         // Remove active class from all cards
                         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
@@ -76,10 +83,12 @@
                         this.classList.add('active');
                     }
                 } else {
-                    window.open(this.dataset.link, '_blank');
+                    // Open the link in the same tab
+                    window.location.href = this.dataset.link;
                 }
             });
         });
     </script>
 </body>
+
 </html>
