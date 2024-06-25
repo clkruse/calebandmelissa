@@ -1,0 +1,110 @@
+@font-face {
+    font-family: 'Helvetica';
+    src: url('fonts/HelveticaNeue.ttc') format('ttc');
+    font-weight: normal;
+    font-style: normal;
+}
+body, html {
+    margin: 0;
+    padding: 0;
+    font-family: Helvetica, serif;
+    box-sizing: border-box;
+}
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+h1, h2 {
+    margin: 0;
+}
+.grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.card-title, .card-content {
+    position: absolute;
+    left: 0;
+    right: 0;
+    padding: 20px;
+    transition: opacity 0.3s ease;
+}
+.card-title {
+    top: 0;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+.card-content {
+    top: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    opacity: 0;
+    font-family: 'Libre Caslon Text', serif;
+}
+.card-content h1, .card-content h2 {
+    color: #d97856;
+    font-style: normal;
+    margin-bottom: 10px;
+}
+.card-content p {
+    font-style: italic;
+}
+.card.active .card-title {
+    opacity: 0;
+}
+.card.active .card-content {
+    opacity: 1;
+}
+#wedding-details h1 {
+    font-size: 2em;
+}
+
+/* Mobile styles */
+@media (max-width: 767px) {
+    .card {
+        height: 300px;
+    }
+    #wedding-details {
+        height: 450px;
+    }
+}
+
+/* Desktop styles */
+@media (min-width: 768px) {
+    .grid {
+        grid-template-columns: 1fr 1fr;
+        height: calc(100vh - 40px);
+    }
+    .card {
+        height: auto;
+    }
+    #wedding-details {
+        grid-row: span 3;
+    }
+    #wedding-details h1 {
+        font-size: 2.5em;
+    }
+    .card:hover .card-title {
+        opacity: 0;
+    }
+    .card:hover .card-content {
+        opacity: 1;
+    }
+}
