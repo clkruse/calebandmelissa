@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', (event) => {
             const CSC = module.default;
             const element = document.querySelector('.canvas-container');
             const options = {
-                framePath: "../img/invitation-001.jpg",
+                framePath: "../img/Invitation-001.jpg",
                 frameCount: 6,
                 scrollArea: 1500
             };
