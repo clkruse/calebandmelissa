@@ -263,12 +263,72 @@ function updateSelectedPoint(locationName) {
     }
 }
 
+function clearActiveState() {
+    if (activeCard) {
+        activeCard.classList.remove('active');
+        activeCard = null;
+    }
+}
+
+function updateSelectedPoint(locationName) {
+    if (selectedPointId !== null) {
+        map.setFeatureState(
+            { source: 'points', id: selectedPointId },
+            { selected: false }
+        );
+    }
+
+    const features = map.querySourceFeatures('points', {
+        filter: ['==', ['get', 'name'], locationName]
+    });
+
+    if (features.length > 0) {
+        selectedPointId = features[0].id;
+        map.setFeatureState(
+            { source: 'points', id: selectedPointId },
+            { selected: true }
+        );
+    } else {
+        selectedPointId = null;
+    }
+}
+
 function setupMap(locationsData) {
     map.on('load', function () {
         addPointsLayer(locationsData);
         addRoutesLayer();
-    });
+        
+        // Add click event listener to the points
+        map.on('click', 'points', (e) => {
+            if (e.features.length > 0) {
+                const clickedPoint = e.features[0];
+                const locationName = clickedPoint.properties.name;
+                
+                // Fly to the clicked point
+                map.flyTo({
+                    center: clickedPoint.geometry.coordinates,
+                    zoom: 14,
+                    duration: 1000
+                });
 
+                // Update the selected point
+                updateSelectedPoint(locationName);
+
+                // Scroll to the corresponding card
+                scrollToCard(locationName);
+            }
+        });
+
+        // Change the cursor to a pointer when hovering over a point
+        map.on('mouseenter', 'points', () => {
+            map.getCanvas().style.cursor = 'pointer';
+        });
+
+        // Change it back to the default cursor when it leaves a point
+        map.on('mouseleave', 'points', () => {
+            map.getCanvas().style.cursor = '';
+        });
+    });
     map.on('moveend', () => {
         getDirectionsBtn.style.display = 'block';
     });
@@ -377,6 +437,24 @@ function setupMap(locationsData) {
     const bounds = new mapboxgl.LngLatBounds();
     locationsData.forEach(location => bounds.extend(location.coordinates));
     map.fitBounds(bounds, { padding: 50 });
+}
+
+
+function scrollToCard(locationName) {
+    const cards = document.querySelectorAll('.card');
+    for (let card of cards) {
+        if (card.querySelector('h2').textContent.trim().toUpperCase() === locationName.toUpperCase()) {
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Clear any previously active cards
+            clearActiveState();
+            
+            // Set this card as active
+            card.classList.add('active');
+            activeCard = card;
+            break;
+        }
+    }
 }
 
 function flyToMarker(lng, lat) {
