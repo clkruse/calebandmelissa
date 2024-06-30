@@ -12,6 +12,10 @@ body {
     padding: 20px;
 }
 
+a {
+    color: #9b565a;
+}
+
 h1, h2 {
     margin: 0;
 }
