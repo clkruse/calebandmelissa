@@ -49,29 +49,6 @@ document.addEventListener('DOMContentLoaded', (event) => {
         }
     });
 
-    // video play/pause functionality
-    const videoContainers = document.querySelectorAll('.video-container');
-    
-    videoContainers.forEach(container => {
-        const video = container.querySelector('video');
-        const playButton = document.createElement('div');
-        playButton.classList.add('play-button');
-        container.appendChild(playButton);
-
-        container.addEventListener('click', () => {
-            if (video.paused) {
-                video.play();
-                playButton.style.display = 'none';
-            } else {
-                video.pause();
-                playButton.style.display = 'flex';
-            }
-        });
-
-        video.addEventListener('ended', () => {
-            playButton.style.display = 'flex';
-        });
-    });
 
 
     // Canvas Scroll Clip initialization
