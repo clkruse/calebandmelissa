@@ -117,6 +117,13 @@
         "order": 2
     },
     {
+        "name": "Golden Gate Park",
+        "region": "San Francisco",
+        "description": "A beautiful park in the center of SF. Melissa and Caleb have gone for many morning runs together here, and have had lots of fun with friends exploring the park. Stop by Matching Half Cafe or The Mill nearby for a coffee or breakfast!",
+        "coordinates": [-122.46778695172436, 37.768963300032674],
+        "order": 3
+    },
+    {
         "name": "Welcome",
         "region": "Overview",
         "description": "Let's get you oriented. Here's the route between the two main airports, and our wedding venue. It's about a 90-minute drive between both airports and the Lodge at Marconi.",
