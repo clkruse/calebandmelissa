@@ -87,7 +87,7 @@ function createWelcomeCard(welcomeLocation, locationsData) {
     const welcomeCard = document.createElement('div');
     welcomeCard.className = 'welcome-card';
     welcomeCard.innerHTML = `
-        <img src="../img/welcome.jpg" alt="Welcome to Northern California">
+        <img src="/img/welcome.jpg" alt="Welcome to Northern California">
         <div class="region-title">
             <h2>WELCOME!</h2>
         </div>
@@ -167,7 +167,7 @@ function createRegionCard(location) {
     const regionCard = document.createElement('div');
     regionCard.className = 'region-card';
     regionCard.innerHTML = `
-        <img src="../img/${location.name}.jpg" alt="${location.name}">
+        <img src="/img/${location.name}.jpg" alt="${location.name}">
         <div class="region-title">
             <h2>${location.name.toUpperCase()}</h2>
         </div>
@@ -201,7 +201,7 @@ function createLocationCard(location) {
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = `
-        <img src="../img/${location.name}.jpg" alt="${location.name}">
+        <img src="/img/${location.name}.jpg" alt="${location.name}">
         <div class="card-title">
             <h2>${location.name.toUpperCase()}</h2>
         </div>
