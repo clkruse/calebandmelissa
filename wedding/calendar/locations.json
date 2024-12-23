@@ -1,0 +1,117 @@
+[
+    {
+        "name": "Dipsea Trail",
+        "region": "Mill Valley",
+        "description": "Home of the oldest trail race in America (started in 1905), the Dipsea trail is a stunning 7.5-mile trip through redwood forests and open meadows to reach Stinson Beach. Start at Old Mill Park, and follow the signs up the stairs. The Dipsea is Caleb's favorite trail in the whole world—he's run the 14-mile out and back more than 30 times!",
+        "coordinates": [-122.55245509274286, 37.90535521935288],
+        "order": 2
+    },
+
+    {
+        "name": "Lands End",
+        "region": "San Francisco",
+        "description": "This is one of the most beautiful places in San Francisco. If you walk along the path for a ways, you'll catch stunning views of the coast and of the Golden Gate Bridge.",
+        "coordinates": [-122.51161819858251, 37.7802594477183],
+        "order": 1
+    },
+    {
+        "name": "The Interval",
+        "region": "San Francisco",
+        "description": "The interval is a coffee shop, bar, and museum all in one. It is the home of the Long Now Foundation, a quirky group thinking about the distant future. They are building a clock that will last for 10,000 years!",
+        "coordinates": [-122.43205941387096, 37.80653522776961],
+        "order": 2
+    },
+    {
+        "name": "Oakland Airport",
+        "region": "East Bay",
+        "description": "Confusingly the Oakland airport was recently renamed to \"San Francisco Bay Oakland Airport.\" OAK and SFO are equally good airports to visit for our wedding. OAK is about an hour and a half drive from The Lodge at Marconi.",
+        "coordinates": [-122.2112802196859, 37.71192750221407]
+    },
+    {
+        "name": "San Francisco Airport",
+        "region": "San Francisco",
+        "description": "One of two airports in the bay that provide easy access. SFO is about an hour and a half drive from The Lodge at Marconi.",
+        "coordinates": [-122.38792568845261, 37.61588661558195]
+    },
+    {
+        "name": "Welcome",
+        "region": "Overview",
+        "description": "Let's get you oriented. Here's the route between the two main airports, and our wedding venue. It's about a 90-minute drive between both airports and the Lodge at Marconi.",
+        "coordinates": [-122.5634, 37.8855]
+    },
+    {
+        "name": "Wednesday - July 31",
+        "region": "Overview",
+        "description": "",
+        "coordinates": [-122.8796370708087, 38.14518218154993]
+    },
+    {
+        "name": "Dinner - 6:30pm",
+        "region": "Wednesday - July 31",
+        "description": "Nothing concretely planned yet, but would love to get dinner with any family that is in town.",
+        "coordinates": [-122.8796370708087, 38.14518218154993],
+        "order": 1
+    },
+
+    {
+        "name": "Thursday - August 1",
+        "region": "Overview",
+        "description": "",
+        "coordinates": [-122.5447, 37.9063]
+    },
+    {
+        "name": "Nails at Lavender Salon - 2:30pm",
+        "region": "Thursday - August 1",
+        "description": "Melissa and anyone who would like to join her, get nails done at Lavender Salon next to our house.",
+        "coordinates": [-122.57159534078939, 37.892280862430276],
+        "order": 1
+    },
+    {
+        "name": "Pizza Night - 6:30pm",
+        "region": "Thursday - August 1",
+        "description": "Pizza night at our house with any family who is in town",
+        "coordinates": [-122.57159534078939, 37.892280862430276],
+        "order": 2
+    },
+    {
+        "name": "Friday - August 2",
+        "region": "Overview",
+        "description": "The East Bay is where we live. For us, it's made up of the cities of Berkeley and Oakland.",
+        "coordinates": [-122.2712, 37.8044]
+    },
+    {
+        "name": "Hotel Checkin - 2:00pm",
+        "region": "Friday - August 2",
+        "description": "Caleb and Melissa will check in to the Lodge at Marconi",
+        "coordinates": [-122.57159534078939, 37.892280862430276],
+        "order": 1
+    },
+    {
+        "name": "Wedding Walkthrough - 3:45pm",
+        "region": "Friday - August 2",
+        "description": "A short wedding walkthrough. Required attendees: Both sets of parents, Ellen, Cameron, John, Baehr kids",
+        "coordinates": [-122.57159534078939, 37.892280862430276],
+        "order": 2
+    },
+    {
+        "name": "Welcome Dinner - 5:30pm",
+        "region": "Friday - August 2",
+        "description": "Welcome dinner at Heidrun Meadery",
+        "coordinates": [-122.57159534078939, 37.892280862430276],
+        "order": 3
+    },
+    {
+        "name": "Smores at Marconi - 8:30pm",
+        "region": "Friday - August 2",
+        "description": "Smores back at Marconi",
+        "coordinates": [-122.57159534078939, 37.892280862430276],
+        "order": 4
+    },
+
+    {
+        "name": "Saturday - August 3",
+        "region": "Overview",
+        "description": "San Francisco needs no introduction. It is the heart of the Bay Area and a place we have both loved calling home.",
+        "coordinates": [-122.4194, 37.7749]
+    }
+]

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Running History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <a href="../" class="home-button" aria-label="Return to homepage">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+    <div class="container">
+        <header class="site-header">
+            <h1>Our Favorite Places</h1>
+            <h2 class="subheader">at home and around the world</h2>
+        </header>
+        
+        <div class="grid">
+            <div class="card" data-link="#">
+                <img src="./img/japan.jpg">
+                <div class="card-title">
+                    <h2>Japan</h2>
+                </div>
+                <div class="card-content">
+                    <h2>Japan</h2>
+                    <p>Favorite spots from our trip in 2024.<br>Under construction.</p>
+                </div>
+            </div>
+            <div class="card" data-link="bay">
+                <img src="./img/sf.jpg">
+                <div class="card-title">
+                    <h2>Bay Area</h2>
+                </div>
+                <div class="card-content">
+                    <h2>Northern California</h2>
+                    <p>Our hometwon favorites</p>
+                </div>
+            </div>
+            <div class="card" data-link="#">
+                <img src="./img/greenport.jpg">
+                <div class="card-title">
+                    <h2>Greenport, NY</h2>
+                </div>
+                <div class="card-content">
+                    <h2>Greenport, NY</h2>
+                    <p>A magical spot on the North Fork of Long Island.<br>Under construction.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+
+    document.querySelectorAll('.card').forEach(card => {
+        card.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (isTouchDevice) {
+                if (card.classList.contains('active')) {
+                    // If this card was already active, open the link in the same tab
+                    window.location.href = this.dataset.link;
+                } else {
+                    // Remove active class from all cards
+                    document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+                    // If this card wasn't active, make it active
+                    this.classList.add('active');
+                }
+            } else {
+                // Open the link in the same tab
+                window.location.href = this.dataset.link;
+            }
+        });
+    });
+</script>
+</html>

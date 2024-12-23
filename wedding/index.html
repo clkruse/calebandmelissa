@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Link Preview Card Metadata -->
+    <meta property="og:title" content="Melissa and Caleb are getting Married!">
+    <meta property="og:description" content="We can't wait to see you on August 3. Find all the information here.">
+    <meta property="og:image" content="img/thumbnail-header.jpg">
+    <meta property="og:url" content="https://calebandmelissa.com">
+    <meta property="og:type" content="website">
+
+    <title>M&C - August 3</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+    <a href="../" class="home-button" aria-label="Return to homepage">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+    <div class="container">
+        <div class="grid">
+            <div id="wedding-details" class="card" data-link="https://withjoy.com/calebandmelissa/">
+                <img src="img/tower-hill.jpg" alt="Wedding details">
+                <div class="card-title">
+                    <h1>WEDDING DETAILS</h1>
+                </div>
+                <div class="card-content">
+                    <h1>Wedding Details</h1>
+                    <p>Take a look at all the wedding details here. We can't wait to celebrate with you!</p>
+                </div>
+            </div>
+            <div id="registry" class="card"
+                data-link="https://www.heathceramics.com">
+                <img src="img/registry.jpg" alt="Registry items">
+                <div class="card-title">
+                    <h2>REGISTRY</h2>
+                </div>
+                <div class="card-content">
+                    <h2>Heath Ceramics Registry</h2>
+                    <p>Sharing a homemade meal at a table full of family & friends is one of our favorite things to do.
+                        We have created a registry with Heath Ceramics, a Bay Area studio that we love.<br>We hope to
+                        use these pieces with you soon!</p>
+                </div>
+            </div>
+            <div id="places-to-visit" class="card" data-link="maps">
+                <img src="img/to-visit.jpg" alt="Places to visit">
+                <div class="card-title">
+                    <h2>PLACES TO VISIT</h2>
+                </div>
+                <div class="card-content">
+                    <h2>Our Favorite Places</h2>
+                    <p>Welcome to Northern California. We're so excited to share the places that we love with you!</p>
+                </div>
+            </div>
+            <div id="invitation" class="card" data-link="invitation">
+                <img src="img/invitation.jpg" alt="Invitation">
+                <div class="card-title">
+                    <h2>THE INVITATION</h2>
+                </div>
+                <div class="card-content">
+                    <h2>How It's Made</h2>
+                    <p>We had fun designing our invitation with a local letterpress printer. Take a look behind the
+                        scenes at how the invitation was made.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+
+        document.querySelectorAll('.card').forEach(card => {
+            card.addEventListener('click', function (e) {
+                e.preventDefault();
+                if (isTouchDevice) {
+                    if (card.classList.contains('active')) {
+                        // If this card was already active, open the link in the same tab
+                        window.location.href = this.dataset.link;
+                    } else {
+                        // Remove active class from all cards
+                        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+                        // If this card wasn't active, make it active
+                        this.classList.add('active');
+                    }
+                } else {
+                    // Open the link in the same tab
+                    window.location.href = this.dataset.link;
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M&C - Wedding Schedule</title>
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.css' rel='stylesheet' />
+    <link rel="stylesheet" href="/wedding/calendar/style.css">
+    <!-- Link Preview Card Metadata -->
+    <meta property="og:title" content="Melissa and Caleb's Wedding Schedule">
+    <meta property="og:description" content="Join us for our wedding celebration from July 31 to August 3. Here's our schedule of events.">
+    <meta property="og:image" content="/img/Point Reyes.jpg">
+    <meta property="og:url" content="https://calebandmelissa.com">
+    <meta property="og:type" content="website">
+</head>
+<body>
+    <a href="/" class="home-button" aria-label="Return to homepage">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+    </a>
+    <div class="container">
+        <div class="grid">
+            <div class="map-container">
+                <div id="map"></div>
+            </div>
+            <div class="schedule">
+                <h1>Wedding Schedule</h1>
+                <div class="timeline">
+                    <!-- Timeline will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.9.1/mapbox-gl.js'></script>
+    <script src='https://unpkg.com/@turf/turf@6/turf.min.js'></script>
+    <script src="/wedding/calendar/script.js"></script>
+</body>
+</html>
