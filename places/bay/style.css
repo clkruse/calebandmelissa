@@ -331,7 +331,7 @@ h1, h2 {
 @media (max-width: 767px) {
     .home-button {
         top: 10px;
-        left: 10px;
+        right: 10px;
         width: 36px;
         height: 36px;
     }

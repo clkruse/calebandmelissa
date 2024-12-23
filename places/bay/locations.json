@@ -1,0 +1,156 @@
+[
+    {
+        "name": "Oakland Airport",
+        "region": "East Bay",
+        "description": "Confusingly the Oakland airport was recently renamed to \"San Francisco Bay Oakland Airport.\" OAK and SFO are equally good airports to visit for our wedding. OAK is about an hour and a half drive from The Lodge at Marconi.",
+        "coordinates": [-122.2112802196859, 37.71192750221407]
+    },
+    {
+        "name": "Rockridge - Our Home",
+        "region": "East Bay",
+        "description": "We live in the Rockridge neighborhood between Oakland and Berkeley. The neighborhood has an abundance of good restaurants, shops, and coffee. Come by for a visit!",
+        "coordinates": [-122.25204220723741, 37.84712091925696],
+        "order": 1
+    },
+    {
+        "name": "Standard Fare",
+        "region": "East Bay",
+        "description": "Delicious and wholesome food made with the full kitchen on display. We think of this spot as a reference for what we'd like our future kitchen and cooking to be.",
+        "coordinates": [-122.29177837424913, 37.85712807146077],
+        "order": 2
+    },
+    {
+        "name": "Cheese Board Collective",
+        "region": "East Bay",
+        "description": "A Berkeley classic, Cheese Board serves baked goods, cheese, and coffee by day, and then delicious pizzas at night. Located across from Chez Panisse and the first Peet's Coffee in Berkeley's \"Gourmet Ghetto\"",
+        "coordinates": [-122.26953227741994, 37.87992183822708],
+        "order": 3
+    },
+    {
+        "name": "Snail Bar",
+        "region": "East Bay",
+        "description": "A cozy and hip spot serving snails, snacks, and natural wines. One of our favorite spots for people watching.",
+        "coordinates": [-122.26417618497568, 37.83673757071734],
+        "order": 4
+    },
+    {
+        "name": "Hook Fish",
+        "region": "Mill Valley",
+        "description": "This is one of our favorite places to stop near Mill Valley to grab food. The spot is quintessentially Northern California. Caleb and Melissa went on their first date next door at The Junction, and came here with friends after getting engaged!",
+        "coordinates": [-122.52469656958857, 37.88195712913471],
+        "order": 3
+    },
+    {
+        "name": "Muir Woods",
+        "region": "Mill Valley",
+        "description": "We've spent many hours running in the beautiful hills surrounding Muir Woods. This area is filled with majestic redwoods and fern forests. We got engaged just up the hill too! Note: To visit Muir Woods, you'll need to either get a reservation, or to follow this route.",
+        "coordinates": [-122.57159534078939, 37.892280862430276],
+        "order": 1
+    },
+    {
+        "name": "Dipsea Trail",
+        "region": "Mill Valley",
+        "description": "Home of the oldest trail race in America (started in 1905), the Dipsea trail is a stunning 7.5-mile trip through redwood forests and open meadows to reach Stinson Beach. Start at Old Mill Park, and follow the signs up the stairs. The Dipsea is Caleb's favorite trail in the whole world—he's run the 14-mile out and back more than 30 times!",
+        "coordinates": [-122.55245509274286, 37.90535521935288],
+        "order": 2
+    },
+    {
+        "name": "The Lodge at Marconi",
+        "region": "Point Reyes",
+        "description": "The site of our wedding! We can't wait to see you all there!",
+        "coordinates": [-122.8796370708087, 38.14518218154993],
+        "order": 1
+    },
+    {
+        "name": "Side Street Kitchen",
+        "region": "Point Reyes",
+        "description": "This is a great spot to grab a meal after a day of exploring Point Reyes. They serve hearty and wholesome meals. Caleb's all-time favorite is the bean cassoulet and Melissa's is a full French press of coffee delivered to the table.",
+        "coordinates": [-122.80745321946566, 38.06853384289934],
+        "order": 3
+    },
+    {
+        "name": "West Marin Culture Shop",
+        "region": "Point Reyes",
+        "description": "This food hall is filled with tasty fermented foods. Great cheeses, sauerkraut, kombuchas, and more. Our favorite is the \"24 Carrot Gold\" sauerkraut.",
+        "coordinates": [-122.80715576145504, 38.06815142166285],
+        "order": 4
+    },
+    {
+        "name": "Toby's Coffee Shop",
+        "region": "Point Reyes",
+        "description": "Don't let the location in a barn keep you away, Toby's is the best coffee spot in Point Reyes. Bovine Bakery gets a lot of attention, but stop by Toby's for a good coffee made with beans from Linea. Note: Toby's only takes cash.",
+        "coordinates": [-122.8053679013363, 38.06785989292327],
+        "order": 5
+    },
+    {
+        "name": "Palace Market",
+        "region": "Point Reyes",
+        "description": "This grocery store serves the most delicious buffalo milk ice cream. Be sure and stop by for a cup at some point during your stay.",
+        "coordinates": [-122.80616703002337, 38.06834635036777],
+        "order": 6
+    },
+    {
+        "name": "Point Reyes National Seashore",
+        "region": "Point Reyes",
+        "description": "Located on the opposite side of Tomales Bay from Marconi, this park holds some of our favorite spots. Hike to the end of the peninsula Tomales Point, visit the Cypress Tree Tunnel, or spend some time at the many beaches (Limantour is a favorite). Keep an eye out for Tule Elk, which are endemic to this small area.",
+        "coordinates": [-122.88675992051756, 38.05353507949709],
+        "order": 2
+    },
+    {
+        "name": "San Francisco Airport",
+        "region": "San Francisco",
+        "description": "One of two airports in the bay that provide easy access. SFO is about an hour and a half drive from The Lodge at Marconi.",
+        "coordinates": [-122.38792568845261, 37.61588661558195]
+    },
+    {
+        "name": "Lands End",
+        "region": "San Francisco",
+        "description": "This is one of the most beautiful places in San Francisco. If you walk along the path for a ways, you'll catch stunning views of the coast and of the Golden Gate Bridge.",
+        "coordinates": [-122.51161819858251, 37.7802594477183],
+        "order": 1
+    },
+    {
+        "name": "The Interval",
+        "region": "San Francisco",
+        "description": "The interval is a coffee shop, bar, and museum all in one. It is the home of the Long Now Foundation, a quirky group thinking about the distant future. They are building a clock that will last for 10,000 years!",
+        "coordinates": [-122.43205941387096, 37.80653522776961],
+        "order": 2
+    },
+    {
+        "name": "Golden Gate Park",
+        "region": "San Francisco",
+        "description": "A beautiful park in the center of SF. Melissa and Caleb have gone for many morning runs together here, and have had lots of fun with friends exploring the park. Stop by Matching Half Cafe or The Mill nearby for a coffee or breakfast!",
+        "coordinates": [-122.46778695172436, 37.768963300032674],
+        "order": 3
+    },
+    {
+        "name": "Welcome",
+        "region": "Overview",
+        "description": "Let's get you oriented. Here's the route between the two main airports, and our wedding venue. It's about a 90-minute drive between both airports and the Lodge at Marconi.",
+        "coordinates": [-122.5634, 37.8855]
+    },
+    {
+        "name": "Point Reyes",
+        "region": "Overview",
+        "description": "We've loved spending time in Point Reyes. It's a place that is bursting with life and has an authentic charm. We're excited to fill the town with our friends and family for our wedding!",
+        "coordinates": [-122.8796370708087, 38.14518218154993]
+    },
+    {
+        "name": "Mill Valley",
+        "region": "Overview",
+        "description": "Mill Valley is one of our favorite areas in the Bay. It's our favorite spot for starting some of the most beatiful runs and hikes imaginable.",
+        "coordinates": [-122.5447, 37.9063]
+    },
+    {
+        "name": "East Bay",
+        "region": "Overview",
+        "description": "The East Bay is where we live. For us, it's made up of the cities of Berkeley and Oakland.",
+        "coordinates": [-122.2712, 37.8044]
+    },
+    {
+        "name": "San Francisco",
+        "region": "Overview",
+        "description": "San Francisco needs no introduction. It is the heart of the Bay Area and a place we have both loved calling home!",
+        "coordinates": [-122.4194, 37.7749]
+    }
+]
