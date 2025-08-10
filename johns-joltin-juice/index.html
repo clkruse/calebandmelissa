@@ -368,6 +368,10 @@
                         <div class="coffee-name">Breakfast Blend Light Roast</div>
                         <div class="coffee-desc">Light, bright, and citrusy morning blend</div>
                     </div>
+                    <div class="coffee-item" data-coffee="decaf">
+                        <div class="coffee-name">Nescafe Taster's Choice Decaf</div>
+                        <div class="coffee-desc">Smooth instant decaf coffee</div>
+                    </div>
                     <div class="coffee-item" data-coffee="water">
                         <div class="coffee-name">Fresh Water</div>
                         <div class="coffee-desc">Complimentary filtered water</div>
@@ -385,6 +389,24 @@
                     <div class="size-item temperature-item" data-temperature="iced">
                         <div class="size-name">Iced 🧊</div>
                         <div class="size-volume">Refreshing cold brew</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="milkSection" style="display: none;">
+                <h2>Add Milk or Cream?</h2>
+                <div class="size-options">
+                    <div class="size-item milk-item" data-milk="none">
+                        <div class="size-name">Black</div>
+                        <div class="size-volume">No milk or cream</div>
+                    </div>
+                    <div class="size-item milk-item" data-milk="milk">
+                        <div class="size-name">Milk</div>
+                        <div class="size-volume">Add regular milk</div>
+                    </div>
+                    <div class="size-item milk-item" data-milk="half-half">
+                        <div class="size-name">Half & Half</div>
+                        <div class="size-volume">Add half and half</div>
                     </div>
                 </div>
             </div>
@@ -471,6 +493,7 @@
         let orderState = {
             coffee: null,
             temperature: null,
+            milk: null,
             size: null,
             coffeeRating: 0,
             baristaRating: 0,
@@ -493,16 +516,23 @@
                 this.classList.add('selected');
                 orderState.coffee = this.dataset.coffee;
                 
-                // Show/hide temperature section based on selection
+                // Show/hide temperature and milk sections based on selection
                 const tempSection = document.getElementById('temperatureSection');
+                const milkSection = document.getElementById('milkSection');
+                
                 if (orderState.coffee === 'water') {
                     tempSection.style.display = 'none';
+                    milkSection.style.display = 'none';
                     orderState.temperature = 'cold'; // Water is always cold
+                    orderState.milk = 'none'; // No milk for water
                 } else {
                     tempSection.style.display = 'block';
-                    // Reset temperature selection when changing coffee
+                    milkSection.style.display = 'block';
+                    // Reset temperature and milk selection when changing coffee
                     document.querySelectorAll('.temperature-item').forEach(t => t.classList.remove('selected'));
+                    document.querySelectorAll('.milk-item').forEach(m => m.classList.remove('selected'));
                     orderState.temperature = null;
+                    orderState.milk = null;
                 }
                 
                 checkOrderReady();
@@ -515,6 +545,16 @@
                 document.querySelectorAll('.temperature-item').forEach(t => t.classList.remove('selected'));
                 this.classList.add('selected');
                 orderState.temperature = this.dataset.temperature;
+                checkOrderReady();
+            });
+        });
+
+        // Milk selection
+        document.querySelectorAll('.milk-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.milk-item').forEach(m => m.classList.remove('selected'));
+                this.classList.add('selected');
+                orderState.milk = this.dataset.milk;
                 checkOrderReady();
             });
         });
@@ -532,7 +572,13 @@
         // Check if order is ready
         function checkOrderReady() {
             const orderButton = document.getElementById('orderButton');
-            if (orderState.coffee && orderState.size && (orderState.temperature || orderState.coffee === 'water')) {
+            const isWater = orderState.coffee === 'water';
+            const hasRequiredFields = orderState.coffee && 
+                                    orderState.size && 
+                                    (orderState.temperature || isWater) &&
+                                    (orderState.milk !== null || isWater);
+            
+            if (hasRequiredFields) {
                 orderButton.disabled = false;
             } else {
                 orderButton.disabled = true;
@@ -639,6 +685,8 @@
                     coffeeName = 'Starbucks Colombian';
                 } else if (orderState.coffee === 'breakfast') {
                     coffeeName = 'Breakfast Blend Light Roast';
+                } else if (orderState.coffee === 'decaf') {
+                    coffeeName = 'Nescafe Taster\'s Choice Decaf';
                 } else {
                     coffeeName = 'Fresh Water';
                 }
@@ -652,11 +700,16 @@
                     tempDisplay = orderState.temperature === 'hot' ? ' (Hot)' : ' (Iced)';
                 }
                 
+                let milkDisplay = '';
+                if (orderState.coffee !== 'water' && orderState.milk !== 'none') {
+                    milkDisplay = orderState.milk === 'milk' ? ' with Milk' : ' with Half & Half';
+                }
+                
                 document.getElementById('orderSummary').innerHTML = `
-                    <p><strong>Order:</strong> ${sizeName} ${coffeeName}${tempDisplay}</p>
-                    <p><strong>Subtotal:</strong> $${orderTotal.toFixed(2)}</p>
-                    ${orderState.tip > 0 ? `<p><strong>Tip:</strong> $${orderState.tip.toFixed(2)}</p>` : ''}
-                    <p><strong>Total:</strong> $${finalTotal.toFixed(2)}</p>
+                    <p><strong>Order:</strong> ${sizeName} ${coffeeName}${tempDisplay}${milkDisplay}</p>
+                    <p><strong>Subtotal:</strong> ${orderTotal.toFixed(2)}</p>
+                    ${orderState.tip > 0 ? `<p><strong>Tip:</strong> ${orderState.tip.toFixed(2)}</p>` : ''}
+                    <p><strong>Total:</strong> ${finalTotal.toFixed(2)}</p>
                     <p><strong>Coffee Rating:</strong> ${'★'.repeat(orderState.coffeeRating)}${'☆'.repeat(5 - orderState.coffeeRating)}</p>
                     <p><strong>Barista Rating:</strong> ${'★'.repeat(orderState.baristaRating)}${'☆'.repeat(5 - orderState.baristaRating)}</p>
                 `;
@@ -674,6 +727,7 @@
             orderState = {
                 coffee: null,
                 temperature: null,
+                milk: null,
                 size: null,
                 coffeeRating: 0,
                 baristaRating: 0,
@@ -685,6 +739,7 @@
             document.querySelectorAll('.coffee-item').forEach(c => c.classList.remove('selected'));
             document.querySelectorAll('.size-item').forEach(s => s.classList.remove('selected'));
             document.querySelectorAll('.temperature-item').forEach(t => t.classList.remove('selected'));
+            document.querySelectorAll('.milk-item').forEach(m => m.classList.remove('selected'));
             document.querySelectorAll('.star').forEach(s => {
                 s.classList.remove('filled');
                 s.style.color = '#ddd';
@@ -695,6 +750,7 @@
             document.getElementById('tipDisplay').textContent = '';
             document.getElementById('orderButton').disabled = true;
             document.getElementById('temperatureSection').style.display = 'none';
+            document.getElementById('milkSection').style.display = 'none';
             
             // Show order section
             document.getElementById('successSection').style.display = 'none';
