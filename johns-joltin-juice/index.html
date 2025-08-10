@@ -368,6 +368,24 @@
                         <div class="coffee-name">Breakfast Blend Light Roast</div>
                         <div class="coffee-desc">Light, bright, and citrusy morning blend</div>
                     </div>
+                    <div class="coffee-item" data-coffee="water">
+                        <div class="coffee-name">Fresh Water</div>
+                        <div class="coffee-desc">Complimentary filtered water</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section" id="temperatureSection" style="display: none;">
+                <h2>Temperature</h2>
+                <div class="size-options">
+                    <div class="size-item temperature-item" data-temperature="hot">
+                        <div class="size-name">Hot ☕</div>
+                        <div class="size-volume">Classic hot brew</div>
+                    </div>
+                    <div class="size-item temperature-item" data-temperature="iced">
+                        <div class="size-name">Iced 🧊</div>
+                        <div class="size-volume">Refreshing cold brew</div>
+                    </div>
                 </div>
             </div>
 
@@ -452,6 +470,7 @@
         // State management
         let orderState = {
             coffee: null,
+            temperature: null,
             size: null,
             coffeeRating: 0,
             baristaRating: 0,
@@ -463,7 +482,8 @@
         const prices = {
             small: 3.95,
             medium: 4.95,
-            large: 5.95
+            large: 5.95,
+            water: 0 // Free water
         };
 
         // Coffee selection
@@ -472,6 +492,29 @@
                 document.querySelectorAll('.coffee-item').forEach(c => c.classList.remove('selected'));
                 this.classList.add('selected');
                 orderState.coffee = this.dataset.coffee;
+                
+                // Show/hide temperature section based on selection
+                const tempSection = document.getElementById('temperatureSection');
+                if (orderState.coffee === 'water') {
+                    tempSection.style.display = 'none';
+                    orderState.temperature = 'cold'; // Water is always cold
+                } else {
+                    tempSection.style.display = 'block';
+                    // Reset temperature selection when changing coffee
+                    document.querySelectorAll('.temperature-item').forEach(t => t.classList.remove('selected'));
+                    orderState.temperature = null;
+                }
+                
+                checkOrderReady();
+            });
+        });
+
+        // Temperature selection
+        document.querySelectorAll('.temperature-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.temperature-item').forEach(t => t.classList.remove('selected'));
+                this.classList.add('selected');
+                orderState.temperature = this.dataset.temperature;
                 checkOrderReady();
             });
         });
@@ -489,7 +532,7 @@
         // Check if order is ready
         function checkOrderReady() {
             const orderButton = document.getElementById('orderButton');
-            if (orderState.coffee && orderState.size) {
+            if (orderState.coffee && orderState.size && (orderState.temperature || orderState.coffee === 'water')) {
                 orderButton.disabled = false;
             } else {
                 orderButton.disabled = true;
@@ -554,7 +597,7 @@
 
         function updateTipDisplay() {
             if (orderState.tip > 0) {
-                tipDisplay.textContent = `Tip: ${orderState.tip.toFixed(2)}`;
+                tipDisplay.textContent = `Tip: $${orderState.tip.toFixed(2)}`;
             } else {
                 tipDisplay.textContent = '';
             }
@@ -566,7 +609,7 @@
                 this.classList.add('selected');
                 
                 const tipValue = this.dataset.tip;
-                const orderTotal = prices[orderState.size];
+                const orderTotal = orderState.coffee === 'water' ? 0 : prices[orderState.size];
                 
                 if (tipValue === 'custom') {
                     customTipInput.style.display = 'block';
@@ -591,16 +634,29 @@
         // Submit rating
         document.getElementById('submitRating').addEventListener('click', function() {
             if (orderState.coffeeRating > 0 && orderState.baristaRating > 0) {
-                const coffeeName = orderState.coffee === 'colombian' ? 'Starbucks Colombian' : 'Breakfast Blend Light Roast';
+                let coffeeName;
+                if (orderState.coffee === 'colombian') {
+                    coffeeName = 'Starbucks Colombian';
+                } else if (orderState.coffee === 'breakfast') {
+                    coffeeName = 'Breakfast Blend Light Roast';
+                } else {
+                    coffeeName = 'Fresh Water';
+                }
+                
                 const sizeName = orderState.size.charAt(0).toUpperCase() + orderState.size.slice(1);
-                const orderTotal = prices[orderState.size];
+                const orderTotal = orderState.coffee === 'water' ? 0 : prices[orderState.size];
                 const finalTotal = orderTotal + orderState.tip;
                 
+                let tempDisplay = '';
+                if (orderState.coffee !== 'water') {
+                    tempDisplay = orderState.temperature === 'hot' ? ' (Hot)' : ' (Iced)';
+                }
+                
                 document.getElementById('orderSummary').innerHTML = `
-                    <p><strong>Order:</strong> ${sizeName} ${coffeeName}</p>
-                    <p><strong>Subtotal:</strong> ${orderTotal.toFixed(2)}</p>
-                    ${orderState.tip > 0 ? `<p><strong>Tip:</strong> ${orderState.tip.toFixed(2)}</p>` : ''}
-                    <p><strong>Total:</strong> ${finalTotal.toFixed(2)}</p>
+                    <p><strong>Order:</strong> ${sizeName} ${coffeeName}${tempDisplay}</p>
+                    <p><strong>Subtotal:</strong> $${orderTotal.toFixed(2)}</p>
+                    ${orderState.tip > 0 ? `<p><strong>Tip:</strong> $${orderState.tip.toFixed(2)}</p>` : ''}
+                    <p><strong>Total:</strong> $${finalTotal.toFixed(2)}</p>
                     <p><strong>Coffee Rating:</strong> ${'★'.repeat(orderState.coffeeRating)}${'☆'.repeat(5 - orderState.coffeeRating)}</p>
                     <p><strong>Barista Rating:</strong> ${'★'.repeat(orderState.baristaRating)}${'☆'.repeat(5 - orderState.baristaRating)}</p>
                 `;
@@ -617,6 +673,7 @@
             // Reset state
             orderState = {
                 coffee: null,
+                temperature: null,
                 size: null,
                 coffeeRating: 0,
                 baristaRating: 0,
@@ -627,6 +684,7 @@
             // Reset UI
             document.querySelectorAll('.coffee-item').forEach(c => c.classList.remove('selected'));
             document.querySelectorAll('.size-item').forEach(s => s.classList.remove('selected'));
+            document.querySelectorAll('.temperature-item').forEach(t => t.classList.remove('selected'));
             document.querySelectorAll('.star').forEach(s => {
                 s.classList.remove('filled');
                 s.style.color = '#ddd';
@@ -636,6 +694,7 @@
             document.getElementById('customTipAmount').value = '';
             document.getElementById('tipDisplay').textContent = '';
             document.getElementById('orderButton').disabled = true;
+            document.getElementById('temperatureSection').style.display = 'none';
             
             // Show order section
             document.getElementById('successSection').style.display = 'none';
