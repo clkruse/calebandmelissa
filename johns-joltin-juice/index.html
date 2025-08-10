@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coffee Order</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #2c1810 0%, #8b4513 100%);
+            min-height: 100vh;
+            color: #333;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 768px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+
+        .section h2 {
+            color: #2c1810;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .coffee-options {
+            display: grid;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .coffee-item {
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .coffee-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .coffee-item.selected {
+            border-color: #8b4513;
+            background: #fff8f0;
+            transform: scale(1.02);
+        }
+
+        .coffee-name {
+            font-size: 1.3em;
+            font-weight: 600;
+            color: #2c1810;
+            margin-bottom: 5px;
+        }
+
+        .coffee-desc {
+            color: #666;
+            font-size: 0.95em;
+        }
+
+        .size-options {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .size-item {
+            border: 3px solid #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #f9f9f9;
+        }
+
+        .size-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .size-item.selected {
+            border-color: #8b4513;
+            background: #fff8f0;
+            transform: scale(1.05);
+        }
+
+        .size-name {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #2c1810;
+            margin-bottom: 5px;
+        }
+
+        .size-volume {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .order-button {
+            width: 100%;
+            padding: 20px;
+            font-size: 1.3em;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        .order-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(139, 69, 19, 0.4);
+        }
+
+        .order-button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .order-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .rating-section {
+            display: none;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .rating-group {
+            margin-bottom: 30px;
+        }
+
+        .rating-group h3 {
+            color: #2c1810;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .stars {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .star {
+            font-size: 3em;
+            color: #ddd;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .star:hover {
+            transform: scale(1.1);
+        }
+
+        .star.filled {
+            color: #ffd700;
+            animation: starPop 0.3s ease-out;
+        }
+
+        .success-message {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .success-icon {
+            font-size: 4em;
+            color: #4caf50;
+            margin-bottom: 20px;
+        }
+
+        .success-text {
+            font-size: 1.5em;
+            color: #2c1810;
+            margin-bottom: 10px;
+        }
+
+        .order-details {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .new-order-button {
+            padding: 15px 30px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: white;
+            background: linear-gradient(135deg, #8b4513 0%, #d2691e 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .new-order-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+
+        .tip-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tip-button {
+            padding: 15px;
+            font-size: 1.1em;
+            font-weight: 600;
+            color: #2c1810;
+            background: #f9f9f9;
+            border: 3px solid #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tip-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .tip-button.selected {
+            border-color: #8b4513;
+            background: #fff8f0;
+            color: #8b4513;
+        }
+
+        .custom-tip-input {
+            margin-bottom: 15px;
+        }
+
+        .custom-tip-input input {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            transition: border-color 0.3s ease;
+        }
+
+        .custom-tip-input input:focus {
+            outline: none;
+            border-color: #8b4513;
+        }
+
+        .tip-display {
+            text-align: center;
+            font-size: 1.2em;
+            color: #2c1810;
+            font-weight: 600;
+            min-height: 30px;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes starPop {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.3);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .size-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .star {
+                font-size: 2.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>☕ John's Joltin Juice</h1>
+            <p>Order your perfect cup</p>
+        </div>
+
+        <div id="orderSection">
+            <div class="section">
+                <h2>Choose Your Coffee</h2>
+                <div class="coffee-options">
+                    <div class="coffee-item" data-coffee="colombian">
+                        <div class="coffee-name">Starbucks Colombian</div>
+                        <div class="coffee-desc">Medium roast with a balanced, nutty flavor</div>
+                    </div>
+                    <div class="coffee-item" data-coffee="breakfast">
+                        <div class="coffee-name">Breakfast Blend Light Roast</div>
+                        <div class="coffee-desc">Light, bright, and citrusy morning blend</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>Select Size</h2>
+                <div class="size-options">
+                    <div class="size-item" data-size="small">
+                        <div class="size-name">Small</div>
+                        <div class="size-volume">Dzien Dobry Cup</div>
+                    </div>
+                    <div class="size-item" data-size="medium">
+                        <div class="size-name">Medium</div>
+                        <div class="size-volume">Blue Cup</div>
+                    </div>
+                    <div class="size-item" data-size="large">
+                        <div class="size-name">Large</div>
+                        <div class="size-volume">Starbucks Travel Cup</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <button class="order-button" id="orderButton" disabled>Place Order</button>
+            </div>
+        </div>
+
+        <div id="ratingSection" class="rating-section">
+            <div class="section">
+                <h2>Rate Your Experience</h2>
+                
+                <div class="rating-group">
+                    <h3>How was your coffee?</h3>
+                    <div class="stars" id="coffeeRating">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                </div>
+
+                <div class="rating-group">
+                    <h3>How was your barista?</h3>
+                    <div class="stars" id="baristaRating">
+                        <span class="star" data-rating="1">★</span>
+                        <span class="star" data-rating="2">★</span>
+                        <span class="star" data-rating="3">★</span>
+                        <span class="star" data-rating="4">★</span>
+                        <span class="star" data-rating="5">★</span>
+                    </div>
+                </div>
+
+                <div class="rating-group">
+                    <h3>Leave a tip</h3>
+                    <div class="tip-options">
+                        <button class="tip-button" data-tip="15">15%</button>
+                        <button class="tip-button" data-tip="20">20%</button>
+                        <button class="tip-button" data-tip="25">25%</button>
+                        <button class="tip-button custom-tip" data-tip="custom">Custom</button>
+                    </div>
+                    <div class="custom-tip-input" id="customTipInput" style="display: none;">
+                        <input type="number" id="customTipAmount" placeholder="Enter tip amount ($)" min="0" step="0.01">
+                    </div>
+                    <div class="tip-display" id="tipDisplay"></div>
+                </div>
+
+                <button class="order-button" id="submitRating">Submit Rating</button>
+            </div>
+        </div>
+
+        <div id="successSection" class="success-message">
+            <div class="section">
+                <div class="success-icon">✓</div>
+                <div class="success-text">Thank you for your order!</div>
+                <div class="order-details" id="orderSummary"></div>
+                <button class="new-order-button" id="newOrderButton">Place New Order</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State management
+        let orderState = {
+            coffee: null,
+            size: null,
+            coffeeRating: 0,
+            baristaRating: 0,
+            tip: 0,
+            tipPercentage: null
+        };
+
+        // Price calculation (example prices)
+        const prices = {
+            small: 3.95,
+            medium: 4.95,
+            large: 5.95
+        };
+
+        // Coffee selection
+        document.querySelectorAll('.coffee-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.coffee-item').forEach(c => c.classList.remove('selected'));
+                this.classList.add('selected');
+                orderState.coffee = this.dataset.coffee;
+                checkOrderReady();
+            });
+        });
+
+        // Size selection
+        document.querySelectorAll('.size-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.querySelectorAll('.size-item').forEach(s => s.classList.remove('selected'));
+                this.classList.add('selected');
+                orderState.size = this.dataset.size;
+                checkOrderReady();
+            });
+        });
+
+        // Check if order is ready
+        function checkOrderReady() {
+            const orderButton = document.getElementById('orderButton');
+            if (orderState.coffee && orderState.size) {
+                orderButton.disabled = false;
+            } else {
+                orderButton.disabled = true;
+            }
+        }
+
+        // Place order
+        document.getElementById('orderButton').addEventListener('click', function() {
+            document.getElementById('orderSection').style.display = 'none';
+            document.getElementById('ratingSection').style.display = 'block';
+        });
+
+        // Rating functionality
+        function setupRating(containerId, ratingKey) {
+            const stars = document.querySelectorAll(`#${containerId} .star`);
+            
+            stars.forEach(star => {
+                star.addEventListener('click', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    orderState[ratingKey] = rating;
+                    
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.classList.add('filled');
+                        } else {
+                            s.classList.remove('filled');
+                        }
+                    });
+                });
+                
+                star.addEventListener('mouseenter', function() {
+                    const rating = parseInt(this.dataset.rating);
+                    stars.forEach((s, index) => {
+                        if (index < rating) {
+                            s.style.color = '#ffd700';
+                        } else {
+                            s.style.color = '#ddd';
+                        }
+                    });
+                });
+            });
+            
+            document.querySelector(`#${containerId}`).addEventListener('mouseleave', function() {
+                stars.forEach((s, index) => {
+                    if (index < orderState[ratingKey]) {
+                        s.style.color = '#ffd700';
+                    } else {
+                        s.style.color = '#ddd';
+                    }
+                });
+            });
+        }
+
+        setupRating('coffeeRating', 'coffeeRating');
+        setupRating('baristaRating', 'baristaRating');
+
+        // Tip functionality
+        const tipButtons = document.querySelectorAll('.tip-button');
+        const customTipInput = document.getElementById('customTipInput');
+        const customTipAmount = document.getElementById('customTipAmount');
+        const tipDisplay = document.getElementById('tipDisplay');
+
+        function updateTipDisplay() {
+            if (orderState.tip > 0) {
+                tipDisplay.textContent = `Tip: ${orderState.tip.toFixed(2)}`;
+            } else {
+                tipDisplay.textContent = '';
+            }
+        }
+
+        tipButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                tipButtons.forEach(b => b.classList.remove('selected'));
+                this.classList.add('selected');
+                
+                const tipValue = this.dataset.tip;
+                const orderTotal = prices[orderState.size];
+                
+                if (tipValue === 'custom') {
+                    customTipInput.style.display = 'block';
+                    customTipAmount.focus();
+                    orderState.tipPercentage = 'custom';
+                } else {
+                    customTipInput.style.display = 'none';
+                    const percentage = parseInt(tipValue);
+                    orderState.tip = orderTotal * (percentage / 100);
+                    orderState.tipPercentage = percentage;
+                    updateTipDisplay();
+                }
+            });
+        });
+
+        customTipAmount.addEventListener('input', function() {
+            const value = parseFloat(this.value) || 0;
+            orderState.tip = value;
+            updateTipDisplay();
+        });
+
+        // Submit rating
+        document.getElementById('submitRating').addEventListener('click', function() {
+            if (orderState.coffeeRating > 0 && orderState.baristaRating > 0) {
+                const coffeeName = orderState.coffee === 'colombian' ? 'Starbucks Colombian' : 'Breakfast Blend Light Roast';
+                const sizeName = orderState.size.charAt(0).toUpperCase() + orderState.size.slice(1);
+                const orderTotal = prices[orderState.size];
+                const finalTotal = orderTotal + orderState.tip;
+                
+                document.getElementById('orderSummary').innerHTML = `
+                    <p><strong>Order:</strong> ${sizeName} ${coffeeName}</p>
+                    <p><strong>Subtotal:</strong> ${orderTotal.toFixed(2)}</p>
+                    ${orderState.tip > 0 ? `<p><strong>Tip:</strong> ${orderState.tip.toFixed(2)}</p>` : ''}
+                    <p><strong>Total:</strong> ${finalTotal.toFixed(2)}</p>
+                    <p><strong>Coffee Rating:</strong> ${'★'.repeat(orderState.coffeeRating)}${'☆'.repeat(5 - orderState.coffeeRating)}</p>
+                    <p><strong>Barista Rating:</strong> ${'★'.repeat(orderState.baristaRating)}${'☆'.repeat(5 - orderState.baristaRating)}</p>
+                `;
+                
+                document.getElementById('ratingSection').style.display = 'none';
+                document.getElementById('successSection').style.display = 'block';
+            } else {
+                alert('Please rate both your coffee and barista before submitting!');
+            }
+        });
+
+        // New order
+        document.getElementById('newOrderButton').addEventListener('click', function() {
+            // Reset state
+            orderState = {
+                coffee: null,
+                size: null,
+                coffeeRating: 0,
+                baristaRating: 0,
+                tip: 0,
+                tipPercentage: null
+            };
+            
+            // Reset UI
+            document.querySelectorAll('.coffee-item').forEach(c => c.classList.remove('selected'));
+            document.querySelectorAll('.size-item').forEach(s => s.classList.remove('selected'));
+            document.querySelectorAll('.star').forEach(s => {
+                s.classList.remove('filled');
+                s.style.color = '#ddd';
+            });
+            document.querySelectorAll('.tip-button').forEach(b => b.classList.remove('selected'));
+            document.getElementById('customTipInput').style.display = 'none';
+            document.getElementById('customTipAmount').value = '';
+            document.getElementById('tipDisplay').textContent = '';
+            document.getElementById('orderButton').disabled = true;
+            
+            // Show order section
+            document.getElementById('successSection').style.display = 'none';
+            document.getElementById('orderSection').style.display = 'block';
+        });
+    </script>
+</body>
+</html>
