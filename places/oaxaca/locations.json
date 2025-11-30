@@ -1,0 +1,21 @@
+[
+    {
+        "name": "Welcome to Oaxaca",
+        "region": "Overview",
+        "description": "Let's get you oriented. Here's the route between the two main airports, and our wedding venue. It's about a 90-minute drive between both airports and the Lodge at Marconi.",
+        "coordinates": [-96.7253, 17.0605]
+    },
+    {
+        "name": "Food",
+        "region": "Overview",
+        "description": "Oaxaca is known for its delicious food. We've loved eating our way through the city and trying new dishes.",
+        "coordinates": [-96.7253, 17.0605]
+    },
+    {
+        "name": "AMA Terraza",
+        "region": "Food",
+        "description": "We've loved spending time in Point Reyes. It's a place that is bursting with life and has an authentic charm. We're excited to fill the town with our friends and family for our wedding!",
+        "coordinates": [-96.72311306196234, 17.060783912313934]
+    }
+
+]
