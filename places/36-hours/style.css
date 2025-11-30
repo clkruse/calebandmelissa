@@ -111,6 +111,17 @@ h1, h2 {
     font-style: italic;
 }
 
+.card-content p.meta {
+    font-style: normal;
+    margin-top: 6px;
+    opacity: 0.85;
+}
+
+.card-content p.summary {
+    font-style: normal;
+    margin-bottom: 12px;
+}
+
 .card-content a {
     color: #ffffff;
     font-style: normal;

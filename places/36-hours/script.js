@@ -15,14 +15,10 @@ const cardsById = new Map();
 let activeCard = null;
 let selectedPointId = null;
 
-fetch('locations.json')
-    .then(response => response.json())
-    .then(rawLocations => {
-        const locations = rawLocations.map((location, index) => ({
-            ...location,
-            id: index
-        }));
-
+fetch('36-hours.csv')
+    .then(response => response.text())
+    .then(csvText => {
+        const locations = parseCsvLocations(csvText);
         createCards(locations);
         setupMap(locations);
     })
@@ -72,13 +68,26 @@ function createCards(locations) {
         overlayTitle.textContent = location.name || 'Untitled';
         cardContent.appendChild(overlayTitle);
 
-        const regionText = document.createElement('p');
-        regionText.textContent = location.region || 'Unknown destination';
-        cardContent.appendChild(regionText);
+        if (location.date) {
+            const formattedDate = formatDateForDisplay(location.date);
+            if (formattedDate) {
+                const dateText = document.createElement('p');
+                dateText.className = 'meta';
+                dateText.textContent = formattedDate;
+                cardContent.appendChild(dateText);
+            }
+        }
 
         if (location.description) {
+            const descriptionText = document.createElement('p');
+            descriptionText.className = 'summary';
+            descriptionText.textContent = location.description;
+            cardContent.appendChild(descriptionText);
+        }
+
+        if (location.url) {
             const link = document.createElement('a');
-            link.href = location.description;
+            link.href = location.url;
             link.target = '_blank';
             link.rel = 'noopener noreferrer';
             link.textContent = 'Read the itinerary';
@@ -299,4 +308,140 @@ function addGetDirectionsButton() {
     });
 
     return button;
+}
+
+function parseCsvLocations(csvText) {
+    const table = parseCSV(csvText);
+    if (!table.length) {
+        return [];
+    }
+
+    const headers = table[0].map(header => header.trim());
+    const locations = [];
+
+    for (let rowIndex = 1; rowIndex < table.length; rowIndex += 1) {
+        const row = table[rowIndex];
+        if (!row || row.every(cell => !cell || cell.trim() === '')) {
+            continue;
+        }
+
+        const raw = {};
+        headers.forEach((header, index) => {
+            raw[header] = row[index] !== undefined ? row[index] : '';
+        });
+
+        const name = (raw.title || '').trim();
+        const region = (raw.location || '').trim();
+        const url = (raw.url || '').trim();
+        const image = (raw.img_url || '').trim() || null;
+        const coordinates = parseCoordinatePair(raw.coords);
+        const date = (raw.date || '').trim();
+
+        locations.push({
+            id: locations.length,
+            name,
+            region,
+            description: (raw.description || '').trim(),
+            url,
+            coordinates,
+            image,
+            date
+        });
+    }
+
+    return locations;
+}
+
+function parseCoordinatePair(value) {
+    if (!value) {
+        return null;
+    }
+
+    const cleaned = value.replace(/[()]/g, '').trim();
+    if (!cleaned) {
+        return null;
+    }
+
+    const parts = cleaned.split(',').map(part => part.trim());
+    if (parts.length !== 2) {
+        return null;
+    }
+
+    const latitude = Number(parts[0]);
+    const longitude = Number(parts[1]);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+        return null;
+    }
+
+    return [longitude, latitude];
+}
+
+function parseCSV(text) {
+    const rows = [];
+    let currentRow = [];
+    let currentValue = '';
+    let insideQuotes = false;
+
+    for (let index = 0; index < text.length; index += 1) {
+        const char = text[index];
+
+        if (insideQuotes) {
+            if (char === '"') {
+                if (text[index + 1] === '"') {
+                    currentValue += '"';
+                    index += 1;
+                } else {
+                    insideQuotes = false;
+                }
+            } else {
+                currentValue += char;
+            }
+        } else if (char === '"') {
+            insideQuotes = true;
+        } else if (char === ',') {
+            currentRow.push(currentValue);
+            currentValue = '';
+        } else if (char === '\n') {
+            currentRow.push(currentValue);
+            rows.push(currentRow);
+            currentRow = [];
+            currentValue = '';
+        } else if (char === '\r') {
+            // Ignore carriage returns; they are handled by the subsequent newline.
+        } else {
+            currentValue += char;
+        }
+    }
+
+    if (currentValue !== '' || insideQuotes || currentRow.length) {
+        currentRow.push(currentValue);
+    }
+    if (currentRow.length) {
+        rows.push(currentRow);
+    }
+
+    return rows;
+}
+
+function formatDateForDisplay(dateString) {
+    if (!dateString) {
+        return null;
+    }
+
+    const trimmed = dateString.trim();
+    if (!trimmed) {
+        return null;
+    }
+
+    const parsed = Date.parse(trimmed);
+    if (!Number.isNaN(parsed)) {
+        return new Date(parsed).toLocaleDateString(undefined, {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    }
+
+    return trimmed;
 }

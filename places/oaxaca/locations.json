@@ -10,11 +10,46 @@
         "region": "Overview",
         "description": "Oaxaca is known for its delicious food. We've loved eating our way through the city and trying new dishes.",
         "coordinates": [-96.7253, 17.0605]
+    },{
+        "name": "Activities",
+        "region": "Overview",
+        "description": "Oaxaca is known for its delicious food. We've loved eating our way through the city and trying new dishes.",
+        "coordinates": [-96.7253, 17.0605]
     },
     {
         "name": "AMA Terraza",
         "region": "Food",
-        "description": "We've loved spending time in Point Reyes. It's a place that is bursting with life and has an authentic charm. We're excited to fill the town with our friends and family for our wedding!",
+        "description": "Description",
+        "coordinates": [-96.7239, 17.0629]
+    },
+    {
+        "name": "Sabine Sabe",
+        "region": "Food",
+        "description": "Description",
+        "coordinates": [-96.72311306196234, 17.060783912313934]
+    },
+    {
+        "name": "Labo Fermento",
+        "region": "Food",
+        "description": "Description",
+        "coordinates": [-96.72311306196234, 17.060783912313934]
+    },
+    {
+        "name": "Tacos Chilangos",
+        "region": "Food",
+        "description": "Description",
+        "coordinates": [-96.72311306196234, 17.060783912313934]
+    },
+    {
+        "name": "Boulenc",
+        "region": "Food",
+        "description": "Description",
+        "coordinates": [-96.72311306196234, 17.060783912313934]
+    },
+    {
+        "name": "Prietos Taller",
+        "region": "Activities",
+        "description": "Description",
         "coordinates": [-96.72311306196234, 17.060783912313934]
     }
 
