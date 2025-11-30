@@ -1,0 +1,63 @@
+[
+    {
+        "name": "Welcome to Japan",
+        "region": "Overview",
+        "description": "Let's get you oriented. Here's the route between the two main airports, and our wedding venue. It's about a 90-minute drive between both airports and the Lodge at Marconi.",
+        "coordinates": [-122.5634, 37.8855]
+    },
+    {
+        "name": "Tokyo",
+        "region": "Overview",
+        "description": "We've loved spending time in Point Reyes. It's a place that is bursting with life and has an authentic charm. We're excited to fill the town with our friends and family for our wedding!",
+        "coordinates": [-122.8796370708087, 38.14518218154993]
+    },
+    {
+        "name": "Kyoto",
+        "region": "Overview",
+        "description": "Mill Valley is one of our favorite areas in the Bay. It's our favorite spot for starting some of the most beatiful runs and hikes imaginable.",
+        "coordinates": [-122.5447, 37.9063]
+    },
+    {
+        "name": "Weekenders Coffee",
+        "region": "Kyoto",
+        "description": "We live in the Rockridge neighborhood between Oakland and Berkeley. The neighborhood has an abundance of good restaurants, shops, and coffee. Come by for a visit!",
+        "coordinates": [-122.25204220723741, 37.84712091925696],
+        "order": 1
+    },
+    {
+        "name": "Sumo",
+        "region": "Tokyo",
+        "description": "Delicious and wholesome food made with the full kitchen on display. We think of this spot as a reference for what we'd like our future kitchen and cooking to be.",
+        "coordinates": [-122.29177837424913, 37.85712807146077],
+        "order": 1
+    },
+    {
+        "name": "Tokyo Noodles",
+        "region": "Tokyo",
+        "description": "Delicious and wholesome food made with the full kitchen on display. We think of this spot as a reference for what we'd like our future kitchen and cooking to be.",
+        "coordinates": [-122.29177837424913, 37.85712807146077],
+        "order": 2
+    },
+    {
+        "name": "Glitch Coffee",
+        "region": "Tokyo",
+        "description": "Delicious and wholesome food made with the full kitchen on display. We think of this spot as a reference for what we'd like our future kitchen and cooking to be.",
+        "coordinates": [-122.29177837424913, 37.85712807146077],
+        "order": 3
+    },
+    {
+        "name": "Record Bar",
+        "region": "Tokyo",
+        "description": "Delicious and wholesome food made with the full kitchen on display. We think of this spot as a reference for what we'd like our future kitchen and cooking to be.",
+        "coordinates": [-122.29177837424913, 37.85712807146077],
+        "order": 4
+    },
+    {
+        "name": "Tsujiki Fish Market",
+        "region": "Tokyo",
+        "description": "Delicious and wholesome food made with the full kitchen on display. We think of this spot as a reference for what we'd like our future kitchen and cooking to be.",
+        "coordinates": [-122.29177837424913, 37.85712807146077],
+        "order": 5
+    }
+
+]
