@@ -11,49 +11,69 @@ const getDirectionsBtn = addGetDirectionsButton();
 const locationsContainer = document.querySelector('.locations');
 const markers = [];
 
-// Define the canonical region order so cards and sort stay in sync
-const REGION_ORDER = ["Food", "Activities"];
-
-// Fetch locations data from JSON file
-fetch('locations.json')
-    .then(response => response.json())
-    .then(locationsData => {
-        // Sort locations by the new region order
-        locationsData.sort((a, b) => {
-            const indexA = REGION_ORDER.indexOf(a.region);
-            const indexB = REGION_ORDER.indexOf(b.region);
-            if (indexA === indexB) {
-                return a.name.localeCompare(b.name);
+// Parse CSV text into array of location objects
+function parseCSV(csvText) {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',');
+    
+    return lines.slice(1).map(line => {
+        // Handle commas within quoted fields
+        const values = [];
+        let current = '';
+        let inQuotes = false;
+        
+        for (let char of line) {
+            if (char === '"') {
+                inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+                values.push(current.trim());
+                current = '';
+            } else {
+                current += char;
             }
-            return indexA - indexB;
-        });
+        }
+        values.push(current.trim());
+        
+        // Parse coordinates from "lat, lng" format to [lng, lat] array for Mapbox
+        const coordParts = values[3].split(',').map(s => parseFloat(s.trim()));
+        
+        return {
+            name: values[0],
+            region: values[1],
+            description: values[2],
+            coordinates: [coordParts[1], coordParts[0]]  // Mapbox uses [lng, lat]
+        };
+    });
+}
 
-        // Group locations by region
-        const groupedLocations = locationsData.reduce((acc, location) => {
-            if (!acc[location.region]) {
-                acc[location.region] = [];
-            }
-            acc[location.region].push(location);
-            return acc;
-        }, {});
+// Fetch locations data from CSV file
+fetch('locations.csv')
+    .then(response => response.text())
+    .then(csvText => {
+        const locationsData = parseCSV(csvText);
+        
+        // Derive region order from Overview items in the CSV (excluding Welcome)
+        const regionOrder = locationsData
+            .filter(loc => loc.region === "Overview" && !loc.name.toLowerCase().includes("welcome"))
+            .map(loc => loc.name);
 
-        createCards(locationsData, groupedLocations);
+        createCards(locationsData, regionOrder);
         setupMap(locationsData);
     })
     .catch(error => console.error('Error loading locations data:', error));
 
-    function createCards(locationsData) {
-        const welcomeLocation = locationsData.find(loc => loc.name === "Welcome to Oaxaca");
+    function createCards(locationsData, regionOrder) {
+        const welcomeLocation = locationsData.find(loc => loc.name.toLowerCase().includes("welcome"));
         if (welcomeLocation) {
             createWelcomeCard(welcomeLocation, locationsData);
         }
     
-        const overviewLocations = locationsData.filter(loc => loc.region === "Overview" && loc.name !== "Welcome to Oaxaca");
+        const overviewLocations = locationsData.filter(loc => loc.region === "Overview" && !loc.name.toLowerCase().includes("welcome"));
         const nonOverviewLocations = locationsData.filter(loc => 
             loc.region !== "Overview"
         );
     
-        REGION_ORDER.forEach((regionName, index) => {
+        regionOrder.forEach((regionName, index) => {
             const overviewLocation = overviewLocations.find(loc => loc.name === regionName);
             if (overviewLocation) {
                 // Add divider before each region
@@ -89,7 +109,6 @@ function createWelcomeCard(welcomeLocation, locationsData) {
             <h2>Welcome to Oaxaca!</h2>
         </div>
         <div class="card-content">
-            <h2>Welcome to Northern California</h2>
             <p>${welcomeLocation.description}</p>
         </div>
     `;
