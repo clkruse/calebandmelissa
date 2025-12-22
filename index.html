@@ -228,14 +228,12 @@
         document.addEventListener('DOMContentLoaded', () => {
             init();
             
-            // Convert vertical scroll to horizontal scroll
+            // Convert vertical scroll to horizontal scroll on timeline
+            const timeline = document.getElementById('timeline');
             window.addEventListener('wheel', (e) => {
                 if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
                     e.preventDefault();
-                    window.scrollBy({
-                        left: e.deltaY,
-                        behavior: 'auto'
-                    });
+                    timeline.scrollLeft += e.deltaY;
                 }
             }, { passive: false });
         });
