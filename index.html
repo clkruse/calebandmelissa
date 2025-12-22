@@ -17,15 +17,14 @@
 <body>
     <article class="page" id="page">
         
-        <!-- Header -->
+        <!-- Masthead -->
         <header class="timeline-header">
             <h1 class="header-title">Caleb & Melissa</h1>
-            <span class="header-subtitle">A chronicle of projects and adventures</span>
+            <span class="header-subtitle">Projects & Adventures</span>
         </header>
 
         <!-- Timeline Container -->
         <div class="timeline" id="timeline">
-            <div class="timeline-rail"></div>
             <div class="timeline-track" id="timeline-track">
                 <!-- Entries will be generated here -->
             </div>
@@ -33,9 +32,9 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <span class="footer-item">San Francisco · Est. 2018</span>
-            <span class="footer-count"><span id="entry-count">00</span> entries</span>
-            <span class="footer-scroll">Scroll →</span>
+            <span class="footer-item">Est. 2018 · Oakland, California</span>
+            <span class="footer-count"><span id="entry-count">00</span> Entries</span>
+            <span class="footer-scroll">Scroll to explore</span>
         </footer>
 
     </article>
@@ -44,8 +43,10 @@
         // Get configuration from CSS variables (for responsiveness)
         function getConfig() {
             const styles = getComputedStyle(document.documentElement);
+            const cardWidth = parseInt(styles.getPropertyValue('--card-width')) || 260;
             return {
-                cardWidth: parseInt(styles.getPropertyValue('--card-width')) || 260,
+                cardWidth: cardWidth,
+                cardWidthCompact: Math.round(cardWidth * 0.6), // Running cards are 60% width
                 cardHeight: parseInt(styles.getPropertyValue('--card-height')) || 360,
                 cardGap: parseInt(styles.getPropertyValue('--card-gap')) || 12,
                 yearGap: 48,      // Gap between year sections
@@ -158,18 +159,29 @@
                     // Track rightmost card edge for this year
                     let rightmostEdge = 0;
                     
+                    // Track positions for above and below rows separately
+                    let aboveX = currentX;
+                    let belowX = currentX + CONFIG.cardGap; // Slight offset for stagger
+                    
                     // Add entries for this year
                     yearEntries.forEach((entry, localIndex) => {
                         const isAbove = localIndex % 2 === 0;
-                        const rowIndex = Math.floor(localIndex / 2);
-                        const leftOffset = isAbove 
-                            ? currentX + rowIndex * cardStep 
-                            : currentX + rowIndex * cardStep + cardStep / 2;
+                        const isRunning = entry.tag === 'Running';
+                        const cardWidth = isRunning ? CONFIG.cardWidthCompact : CONFIG.cardWidth;
+                        
+                        let leftOffset;
+                        if (isAbove) {
+                            leftOffset = aboveX;
+                            aboveX += cardWidth + CONFIG.cardGap;
+                        } else {
+                            leftOffset = belowX;
+                            belowX += cardWidth + CONFIG.cardGap;
+                        }
                         
                         // Track the rightmost edge of any card
-                        rightmostEdge = Math.max(rightmostEdge, leftOffset + CONFIG.cardWidth);
+                        rightmostEdge = Math.max(rightmostEdge, leftOffset + cardWidth);
                         
-                        html += createEntryHTMLWithPosition(entry, entry.globalIndex, isAbove, leftOffset);
+                        html += createEntryHTMLWithPosition(entry, entry.globalIndex, isAbove, leftOffset, cardWidth);
                     });
                     
                     // Add year divider (except after last year)
@@ -183,6 +195,9 @@
                     currentX = rightmostEdge + CONFIG.yearGap;
                 });
                 
+                // Add the timeline rail with explicit width
+                html = `<div class="timeline-rail" style="width: ${currentX}px;"></div>` + html;
+                
                 track.style.width = currentX + 'px';
                 track.innerHTML = html;
                 
@@ -192,14 +207,29 @@
         }
         
         // Create entry HTML with explicit position
-        function createEntryHTMLWithPosition(entry, index, isAbove, leftOffset) {
+        function createEntryHTMLWithPosition(entry, index, isAbove, leftOffset, cardWidth) {
             const href = entry.link || '#';
+            const isRunning = entry.tag === 'Running';
+            const tagClass = isRunning ? 'entry-compact' : '';
             
             const pinHTML = isAbove 
                 ? '<div class="entry-pin"><span class="pin-line"></span><span class="pin-dot"></span></div>'
                 : '<div class="entry-pin"><span class="pin-dot"></span><span class="pin-line"></span></div>';
             
-            const cardHTML = `
+            // Compact cards for running: no description, minimal info
+            const cardHTML = isRunning ? `
+                <div class="entry-card">
+                    <div class="entry-image">
+                        <img src="${entry.image}" alt="${entry.imageAlt}">
+                        <span class="entry-num">${String(index + 1).padStart(2, '0')}</span>
+                    </div>
+                    <div class="entry-body">
+                        <span class="entry-date">${formatDate(entry.date)}</span>
+                        <h2 class="entry-title">${entry.title}</h2>
+                        <p class="entry-desc">${entry.description}</p>
+                    </div>
+                </div>
+            ` : `
                 <div class="entry-card">
                     <div class="entry-image">
                         <img src="${entry.image}" alt="${entry.imageAlt}">
@@ -210,7 +240,6 @@
                         <span class="entry-date">${formatDate(entry.date)}</span>
                         <h2 class="entry-title">${entry.title}</h2>
                         <p class="entry-desc">${entry.description}</p>
-                        <span class="entry-link">${entry.linkText}</span>
                     </div>
                 </div>
             `;
@@ -218,7 +247,7 @@
             const positionClass = isAbove ? 'entry-above' : 'entry-below';
             
             return `
-                <a href="${href}" class="entry ${positionClass}" data-date="${entry.date}" style="left: ${leftOffset}px;">
+                <a href="${href}" class="entry ${positionClass} ${tagClass}" data-date="${entry.date}" style="left: ${leftOffset}px; width: ${cardWidth}px;">
                     ${isAbove ? cardHTML + pinHTML : pinHTML + cardHTML}
                 </a>
             `;
@@ -228,10 +257,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             init();
             
-            // Convert vertical scroll to horizontal scroll on timeline
+            // Convert vertical scroll to horizontal scroll on timeline (desktop only)
             const timeline = document.getElementById('timeline');
             window.addEventListener('wheel', (e) => {
-                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                // Only intercept scroll on desktop (> 900px viewport)
+                if (window.innerWidth > 900 && Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
                     e.preventDefault();
                     timeline.scrollLeft += e.deltaY;
                 }
