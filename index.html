@@ -4,119 +4,249 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Link Preview Card Metadata -->
-    <meta property="og:title" content="Melissa and Caleb's projects and experiments">
-    <meta property="og:description" content="We can't wait to see you on August 3. Find all the information here.">
+    <meta property="og:title" content="Caleb & Melissa">
+    <meta property="og:description" content="A chronicle of projects and experiments.">
     <meta property="og:image" content="/img/thumbnail-header.jpg">
     <meta property="og:url" content="https://calebandmelissa.com">
     <meta property="og:type" content="website">
 
-    <title>M&C</title>
-    <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&display=swap"
-        rel="stylesheet">
+    <title>Caleb & Melissa</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 
 <body>
-    <div class="container">
-        <header class="site-header">
-            <h1>Caleb & Melissa</h1>
-            <h2 class="subheader">projects + experiments</h2>
+    <article class="page" id="page">
+        
+        <!-- Header -->
+        <header class="timeline-header">
+            <h1 class="header-title">Caleb & Melissa</h1>
+            <span class="header-subtitle">A chronicle of projects and adventures</span>
         </header>
-        <div class="grid">
-            <div id="places-to-visit" class="card" data-link="places">
-                <img loading="lazy" src="/img/lands-end.jpg" alt="Places to visit">
-                <div class="card-title">
-                    <h2>PLACES TO VISIT</h2>
-                </div>
-                <div class="card-content">
-                    <h2>Our Favorite Places</h2>
-                    <p>A record of our favorite places at home and around the world. A record for ourselves, and for others.</p>
-                </div>
-            </div>
-            <div id="invitation" class="card" data-link="run">
-                <img loading="lazy" src="/img/running.jpg" alt="Our running">
-                <div class="card-title">
-                    <h2>RUNNING</h2>
-                </div>
-                <div class="card-content">
-                    <h2>We Like to Run!</h2>
-                    <p>A record of races we've run and what's coming next.</p>
-                </div>
-            </div>
-            <div id="wedding" class="card" data-link="wedding">
-                <img loading="lazy" src="/img/tower-hill.jpg" alt="Wedding details">
-                <div class="card-title">
-                    <h2>OUR WEDDING</h2>
-                </div>
-                <div class="card-content">
-                    <h2>Our Wedding</h2>
-                    <p>We had a wonderful time creating our wedding. Take a look at some of the highlights.</p>
-                </div>
-            </div>
-            <div id="hoshigaki" class="card" data-link="#">
-                <img loading="lazy" src="/img/hoshigaki.jpg" alt="Hoshigaki persimmons">
-                <div class="card-title">
-                    <h2>HOSHIGAKI</h2>
-                </div>
-                <div class="card-content">
-                    <h2>Drying Persimmons</h2>
-                    <p>We came across Hoshigaki, a technique for drying persimmons in Japan. Learn how to make your own.<br>Under construction.</p>
-                </div>
-            </div>
-            <div id="accommodations" class="card" data-link="#">
-                <img loading="lazy" src="/img/preserving.jpg" alt="Accommodations">
-                <div class="card-title">
-                    <h2>PRESERVING</h2>
-                </div>
-                <div class="card-content">
-                    <h2>Fermenting and Pickling</h2>
-                    <p>We've been enjoying fermenting and pickling projects.<br>Under construction.</p>
-                </div>
-            </div>
-            <div id="travel" class="card" data-link="#">
-                <img loading="lazy" src="/img/gyotaku.jpg" alt="Travel Information">
-                <div class="card-title">
-                    <h2>GYOTAKU</h2>
-                </div>
-                <div class="card-content">
-                    <h2>Japanese Fish Printing</h2>
-                    <p>Using a fish to create a print. Our journey to make gyotaku prints.<br>Under construction.</p>
-                </div>
-            </div>
-            <div id="schedule" class="card" data-link="#">
-                <img loading="lazy" src="/img/inks.jpg" alt="Weekend Schedule">
-                <div class="card-title">
-                    <h2>NATURAL INKS</h2>
-                </div>
-                <div class="card-content">
-                    <h2>Natural Inks</h2>
-                    <p>How to make inks and dyes from scavenged materials.<br>Under construction.</p>
-                </div>
+
+        <!-- Timeline Container -->
+        <div class="timeline" id="timeline">
+            <div class="timeline-rail"></div>
+            <div class="timeline-track" id="timeline-track">
+                <!-- Entries will be generated here -->
             </div>
         </div>
-    </div>
-    <script>
-        const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
 
-        document.querySelectorAll('.card').forEach(card => {
-            card.addEventListener('click', function (e) {
-                e.preventDefault();
-                if (isTouchDevice) {
-                    if (card.classList.contains('active')) {
-                        // If this card was already active, open the link in the same tab
-                        window.location.href = this.dataset.link;
-                    } else {
-                        // Remove active class from all cards
-                        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
-                        // If this card wasn't active, make it active
-                        this.classList.add('active');
-                    }
-                } else {
-                    // Open the link in the same tab
-                    window.location.href = this.dataset.link;
-                }
+        <!-- Footer -->
+        <footer class="footer">
+            <span class="footer-item">San Francisco · Est. 2018</span>
+            <span class="footer-count"><span id="entry-count">00</span> entries</span>
+            <span class="footer-scroll">Scroll →</span>
+        </footer>
+
+    </article>
+
+    <script>
+        // Get configuration from CSS variables (for responsiveness)
+        function getConfig() {
+            const styles = getComputedStyle(document.documentElement);
+            return {
+                cardWidth: parseInt(styles.getPropertyValue('--card-width')) || 260,
+                cardHeight: parseInt(styles.getPropertyValue('--card-height')) || 360,
+                cardGap: parseInt(styles.getPropertyValue('--card-gap')) || 12,
+                yearGap: 48,      // Gap between year sections
+                railOffset: parseInt(styles.getPropertyValue('--pin-height')) || 40
+            };
+        }
+        
+        let CONFIG = {};
+
+        // Format date for display
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('-').map(Number);
+            const date = new Date(year, month - 1, day);
+            return date.toLocaleDateString('en-US', { 
+                month: 'long', 
+                day: 'numeric', 
+                year: 'numeric' 
             });
+        }
+
+        // Create entry HTML
+        function createEntryHTML(entry, index) {
+            const href = entry.link || '#';
+            const isAbove = index % 2 === 0; // Alternate: even = above, odd = below
+            
+            const pinHTML = isAbove 
+                ? '<div class="entry-pin"><span class="pin-line"></span><span class="pin-dot"></span></div>'
+                : '<div class="entry-pin"><span class="pin-dot"></span><span class="pin-line"></span></div>';
+            
+            const cardHTML = `
+                <div class="entry-card">
+                    <div class="entry-image">
+                        <img src="${entry.image}" alt="${entry.imageAlt}">
+                        <span class="entry-num">${String(index + 1).padStart(2, '0')}</span>
+                        <span class="entry-tag">${entry.tag}</span>
+                    </div>
+                    <div class="entry-body">
+                        <span class="entry-date">${formatDate(entry.date)}</span>
+                        <h2 class="entry-title">${entry.title}</h2>
+                        <p class="entry-desc">${entry.description}</p>
+                        <span class="entry-link">${entry.linkText}</span>
+                    </div>
+                </div>
+            `;
+            
+            const positionClass = isAbove ? 'entry-above' : 'entry-below';
+            
+            // Calculate position: brick/stagger pattern
+            // Above cards (even index): positions 0, 1, 2, 3... on above row
+            // Below cards (odd index): positions 0, 1, 2, 3... on below row, offset by half card width
+            const rowIndex = Math.floor(index / 2);
+            const cardStep = CONFIG.cardWidth + CONFIG.cardGap;
+            const leftOffset = isAbove 
+                ? rowIndex * cardStep 
+                : rowIndex * cardStep + cardStep / 2;
+            
+            return `
+                <a href="${href}" class="entry ${positionClass}" data-date="${entry.date}" style="left: ${leftOffset}px;">
+                    ${isAbove ? cardHTML + pinHTML : pinHTML + cardHTML}
+                </a>
+            `;
+        }
+
+        // Main initialization
+        async function init() {
+            try {
+                // Get responsive config from CSS
+                CONFIG = getConfig();
+                
+                // Fetch entries data
+                const response = await fetch('/entries.json');
+                const entries = await response.json();
+                
+                // Sort entries by date (newest first)
+                entries.sort((a, b) => {
+                    const [ay, am, ad] = a.date.split('-').map(Number);
+                    const [by, bm, bd] = b.date.split('-').map(Number);
+                    return new Date(by, bm - 1, bd) - new Date(ay, am - 1, ad);
+                });
+                
+                // Update entry count
+                document.getElementById('entry-count').textContent = String(entries.length).padStart(2, '0');
+                
+                // Group entries by year
+                const entriesByYear = {};
+                entries.forEach((entry, globalIndex) => {
+                    const [year] = entry.date.split('-').map(Number);
+                    if (!entriesByYear[year]) {
+                        entriesByYear[year] = [];
+                    }
+                    entriesByYear[year].push({ ...entry, globalIndex });
+                });
+                
+                // Get years sorted (newest first)
+                const years = Object.keys(entriesByYear).sort((a, b) => b - a);
+                
+                // Calculate positions and generate HTML
+                const track = document.getElementById('timeline-track');
+                let html = '';
+                let currentX = 0;
+                const cardStep = CONFIG.cardWidth + CONFIG.cardGap;
+                
+                years.forEach((year, yearIndex) => {
+                    const yearEntries = entriesByYear[year];
+                    const yearStartX = currentX;
+                    
+                    // Add year label
+                    html += `<h2 class="year-label" style="left: ${yearStartX}px;">${year}</h2>`;
+                    
+                    // Track rightmost card edge for this year
+                    let rightmostEdge = 0;
+                    
+                    // Add entries for this year
+                    yearEntries.forEach((entry, localIndex) => {
+                        const isAbove = localIndex % 2 === 0;
+                        const rowIndex = Math.floor(localIndex / 2);
+                        const leftOffset = isAbove 
+                            ? currentX + rowIndex * cardStep 
+                            : currentX + rowIndex * cardStep + cardStep / 2;
+                        
+                        // Track the rightmost edge of any card
+                        rightmostEdge = Math.max(rightmostEdge, leftOffset + CONFIG.cardWidth);
+                        
+                        html += createEntryHTMLWithPosition(entry, entry.globalIndex, isAbove, leftOffset);
+                    });
+                    
+                    // Add year divider (except after last year)
+                    // Position it centered between the last card of this year and first card of next year
+                    if (yearIndex < years.length - 1) {
+                        const dividerPosition = rightmostEdge + CONFIG.yearGap / 2;
+                        html += `<div class="year-divider" style="left: ${dividerPosition}px;"></div>`;
+                    }
+                    
+                    // Move currentX to start of next year section (rightmost edge + gap)
+                    currentX = rightmostEdge + CONFIG.yearGap;
+                });
+                
+                track.style.width = currentX + 'px';
+                track.innerHTML = html;
+                
+            } catch (error) {
+                console.error('Failed to load entries:', error);
+            }
+        }
+        
+        // Create entry HTML with explicit position
+        function createEntryHTMLWithPosition(entry, index, isAbove, leftOffset) {
+            const href = entry.link || '#';
+            
+            const pinHTML = isAbove 
+                ? '<div class="entry-pin"><span class="pin-line"></span><span class="pin-dot"></span></div>'
+                : '<div class="entry-pin"><span class="pin-dot"></span><span class="pin-line"></span></div>';
+            
+            const cardHTML = `
+                <div class="entry-card">
+                    <div class="entry-image">
+                        <img src="${entry.image}" alt="${entry.imageAlt}">
+                        <span class="entry-num">${String(index + 1).padStart(2, '0')}</span>
+                        <span class="entry-tag">${entry.tag}</span>
+                    </div>
+                    <div class="entry-body">
+                        <span class="entry-date">${formatDate(entry.date)}</span>
+                        <h2 class="entry-title">${entry.title}</h2>
+                        <p class="entry-desc">${entry.description}</p>
+                        <span class="entry-link">${entry.linkText}</span>
+                    </div>
+                </div>
+            `;
+            
+            const positionClass = isAbove ? 'entry-above' : 'entry-below';
+            
+            return `
+                <a href="${href}" class="entry ${positionClass}" data-date="${entry.date}" style="left: ${leftOffset}px;">
+                    ${isAbove ? cardHTML + pinHTML : pinHTML + cardHTML}
+                </a>
+            `;
+        }
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            init();
+            
+            // Convert vertical scroll to horizontal scroll
+            window.addEventListener('wheel', (e) => {
+                if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                    e.preventDefault();
+                    window.scrollBy({
+                        left: e.deltaY,
+                        behavior: 'auto'
+                    });
+                }
+            }, { passive: false });
+        });
+        
+        // Re-render on resize (debounced)
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                init();
+            }, 250);
         });
     </script>
 </body>
