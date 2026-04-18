@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Photo Frame">
+<title>Photo Frame</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    color: #fff;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #stage {
+    position: fixed;
+    inset: 0;
+    background: #000;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 1.8s ease-in-out;
+    will-change: opacity;
+  }
+
+  .slide.active { opacity: 1; }
+
+  /* Blurred backdrop fills letterbox area with soft color from the photo */
+  .slide .backdrop {
+    position: absolute;
+    inset: -5%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    filter: blur(40px) saturate(1.2) brightness(0.55);
+    transform: scale(1.15);
+    will-change: transform;
+  }
+
+  /* Actual photo — contain-fit so nothing is cropped */
+  .slide .photo {
+    position: absolute;
+    inset: 0;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    will-change: transform;
+  }
+
+  .slide.ken-burns .photo {
+    animation: kenburns 20s ease-in-out forwards;
+  }
+
+  @keyframes kenburns {
+    0%   { transform: scale(1.0)  translate(0, 0); }
+    100% { transform: scale(1.08) translate(-1%, -0.5%); }
+  }
+
+  /* Fill mode: covers screen, crops to fit */
+  .slide.cover .photo { background-size: cover; }
+  .slide.cover .backdrop { display: none; }
+
+  /* Setup screen */
+  #setup {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at center, #1a1a1a 0%, #000 100%);
+    z-index: 100;
+    padding: 2rem;
+  }
+
+  #setup.hidden { display: none; }
+
+  .setup-card {
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+  }
+
+  .setup-card h1 {
+    font-weight: 200;
+    font-size: 2.5rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 0.5rem;
+  }
+
+  .setup-card .subtitle {
+    color: #888;
+    font-size: 0.95rem;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .pick-btn {
+    display: inline-block;
+    padding: 0.9rem 2rem;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 999px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: transform 0.15s ease, opacity 0.15s ease;
+    font-family: inherit;
+  }
+
+  .pick-btn.secondary {
+    background: transparent;
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+
+  .pick-btn:active { transform: scale(0.97); opacity: 0.85; }
+
+  #fileInput, #addInput { display: none; }
+
+  .hint {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: #555;
+    line-height: 1.6;
+    font-weight: 300;
+  }
+
+  .status {
+    margin-top: 1.5rem;
+    font-size: 0.85rem;
+    color: #888;
+    font-weight: 300;
+    min-height: 1.2em;
+  }
+
+  .progress-bar {
+    margin-top: 1rem;
+    width: 100%;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .progress-bar.visible { opacity: 1; }
+
+  .progress-fill {
+    height: 100%;
+    background: #fff;
+    width: 0%;
+    transition: width 0.2s ease;
+  }
+
+  /* Controls */
+  #controls {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.25rem;
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom));
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    background: linear-gradient(to top, rgba(0,0,0,0.6), transparent);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  #controls.visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .ctrl {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s ease, background 0.15s ease;
+    font-family: inherit;
+  }
+
+  .ctrl:active { transform: scale(0.9); background: rgba(255,255,255,0.25); }
+  .ctrl svg { width: 18px; height: 18px; fill: currentColor; }
+  .ctrl.active { background: rgba(255,255,255,0.3); }
+
+  #counter {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    z-index: 10;
+  }
+
+  #counter.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div id="setup">
+  <div class="setup-card">
+    <h1>Photo Frame</h1>
+    <p class="subtitle" id="subtitle">Select photos from your iPad to begin</p>
+    <div class="btn-row">
+      <label for="fileInput" class="pick-btn">Choose Photos</label>
+      <button class="pick-btn secondary" id="resumeBtn" style="display:none;">Resume Saved</button>
+      <button class="pick-btn secondary" id="clearBtn" style="display:none;">Clear Saved</button>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <div class="status" id="status"></div>
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="hint">
+      Photos are stored only on this iPad.<br>
+      Tap the screen to show controls during slideshow.
+    </div>
+  </div>
+</div>
+
+<div id="stage"></div>
+<div id="counter"></div>
+
+<div id="controls">
+  <button class="ctrl" id="prevBtn" aria-label="Previous">
+    <svg viewBox="0 0 24 24"><path d="M15.5 5L8 12l7.5 7 1.4-1.4L10.8 12l6.1-5.6z"/></svg>
+  </button>
+  <button class="ctrl" id="playBtn" aria-label="Play/Pause">
+    <svg viewBox="0 0 24 24" id="playIcon"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+  </button>
+  <button class="ctrl" id="nextBtn" aria-label="Next">
+    <svg viewBox="0 0 24 24"><path d="M8.5 5L16 12l-7.5 7-1.4-1.4L13.2 12 7.1 6.4z"/></svg>
+  </button>
+  <button class="ctrl active" id="kbBtn" aria-label="Ken Burns" title="Slow zoom">
+    <svg viewBox="0 0 24 24"><path d="M15 3h6v6h-2V5h-4V3zM3 3h6v2H5v4H3V3zm18 18h-6v-2h4v-4h2v6zM3 21v-6h2v4h4v2H3z"/></svg>
+  </button>
+  <button class="ctrl" id="fitBtn" aria-label="Fit/Fill" title="Toggle fit vs fill">
+    <svg viewBox="0 0 24 24"><path d="M4 8h2V4h4V2H4v6zm2 8H4v6h6v-2H6v-4zm12 4h-4v2h6v-6h-2v4zm-4-18v2h4v4h2V2h-6z"/></svg>
+  </button>
+  <button class="ctrl" id="shuffleBtn" aria-label="Shuffle">
+    <svg viewBox="0 0 24 24"><path d="M10.59 9.17L5.41 4 4 5.41l5.17 5.17 1.42-1.41zM14.5 4l2.04 2.04L4 18.59 5.41 20 17.96 7.46 20 9.5V4h-5.5zm.33 9.41l-1.41 1.41 3.13 3.13L14.5 20H20v-5.5l-2.04 2.04-3.13-3.13z"/></svg>
+  </button>
+  <button class="ctrl" id="speedBtn" aria-label="Speed">
+    <span style="font-size: 0.7rem; font-weight: 500;" id="speedLabel">6s</span>
+  </button>
+  <button class="ctrl" id="addBtn" aria-label="Add more" title="Add more photos">
+    <svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>
+  </button>
+  <button class="ctrl" id="fullBtn" aria-label="Fullscreen">
+    <svg viewBox="0 0 24 24"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>
+  </button>
+  <button class="ctrl" id="exitBtn" aria-label="Change photos" title="Change photos">
+    <svg viewBox="0 0 24 24"><path d="M12 7V3l-5 5 5 5V9c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+  </button>
+</div>
+
+<input type="file" id="addInput" accept="image/*" multiple>
+
+<script>
+  // ============ IndexedDB ============
+  const DB_NAME = 'photoFrameDB';
+  const STORE = 'photos';
+  const DB_VERSION = 1;
+
+  function openDB() {
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(DB_NAME, DB_VERSION);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains(STORE)) {
+          db.createObjectStore(STORE, { keyPath: 'id', autoIncrement: true });
+        }
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function savePhotos(files, onProgress) {
+    const db = await openDB();
+    let done = 0;
+    for (const file of files) {
+      const buf = await file.arrayBuffer();
+      const blob = new Blob([buf], { type: file.type });
+      await new Promise((res, rej) => {
+        const tx = db.transaction(STORE, 'readwrite');
+        const r = tx.objectStore(STORE).add({ blob, name: file.name, addedAt: Date.now() });
+        r.onsuccess = () => res();
+        r.onerror = () => rej(r.error);
+      });
+      done++;
+      onProgress?.(done, files.length);
+    }
+  }
+
+  async function loadPhotos() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function countPhotos() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readonly');
+      const req = tx.objectStore(STORE).count();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+
+  async function clearPhotos() {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(STORE, 'readwrite');
+      tx.objectStore(STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
+  // ============ DOM ============
+  const stage = document.getElementById('stage');
+  const setup = document.getElementById('setup');
+  const subtitle = document.getElementById('subtitle');
+  const fileInput = document.getElementById('fileInput');
+  const addInput = document.getElementById('addInput');
+  const resumeBtn = document.getElementById('resumeBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const status = document.getElementById('status');
+  const progressBar = document.getElementById('progressBar');
+  const progressFill = document.getElementById('progressFill');
+  const controls = document.getElementById('controls');
+  const counter = document.getElementById('counter');
+  const playBtn = document.getElementById('playBtn');
+  const playIcon = document.getElementById('playIcon');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const kbBtn = document.getElementById('kbBtn');
+  const fitBtn = document.getElementById('fitBtn');
+  const shuffleBtn = document.getElementById('shuffleBtn');
+  const speedBtn = document.getElementById('speedBtn');
+  const speedLabel = document.getElementById('speedLabel');
+  const addBtn = document.getElementById('addBtn');
+  const fullBtn = document.getElementById('fullBtn');
+  const exitBtn = document.getElementById('exitBtn');
+
+  // ============ State ============
+  let photos = [];
+  let order = [];
+  let pos = 0;
+  let playing = true;
+  let kenBurns = true;
+  let fillMode = false; // false = contain (fit), true = cover (fill/crop)
+  let shuffled = false;
+  const speeds = [4, 6, 10, 20, 60];
+  let speedIdx = 1;
+  let timer = null;
+  let controlsTimer = null;
+
+  // ============ Slideshow ============
+  function currentIndex() { return order[pos]; }
+
+  function showPhoto(idx) {
+    const url = photos[idx];
+    const slide = document.createElement('div');
+    slide.className = 'slide';
+    if (kenBurns) slide.classList.add('ken-burns');
+    if (fillMode) slide.classList.add('cover');
+
+    const backdrop = document.createElement('div');
+    backdrop.className = 'backdrop';
+    backdrop.style.backgroundImage = `url("${url}")`;
+
+    const photo = document.createElement('div');
+    photo.className = 'photo';
+    photo.style.backgroundImage = `url("${url}")`;
+
+    slide.appendChild(backdrop);
+    slide.appendChild(photo);
+    stage.appendChild(slide);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => slide.classList.add('active'));
+    });
+
+    const oldSlides = stage.querySelectorAll('.slide');
+    if (oldSlides.length > 2) {
+      for (let i = 0; i < oldSlides.length - 2; i++) oldSlides[i].remove();
+    }
+    setTimeout(() => {
+      const stillOld = stage.querySelectorAll('.slide');
+      if (stillOld.length > 1) stillOld[0].remove();
+    }, 2000);
+
+    updateCounter();
+  }
+
+  function updateCounter() {
+    counter.textContent = `${pos + 1} / ${photos.length}`;
+  }
+
+  function next() {
+    pos = (pos + 1) % order.length;
+    showPhoto(currentIndex());
+    resetTimer();
+  }
+
+  function prev() {
+    pos = (pos - 1 + order.length) % order.length;
+    showPhoto(currentIndex());
+    resetTimer();
+  }
+
+  function resetTimer() {
+    clearInterval(timer);
+    if (playing) {
+      timer = setInterval(() => {
+        pos = (pos + 1) % order.length;
+        showPhoto(currentIndex());
+      }, speeds[speedIdx] * 1000);
+    }
+  }
+
+  function startSlideshow() {
+    setup.classList.add('hidden');
+    showPhoto(currentIndex());
+    resetTimer();
+    counter.classList.add('visible');
+    setTimeout(() => counter.classList.remove('visible'), 3000);
+  }
+
+  function togglePlay() {
+    playing = !playing;
+    playIcon.innerHTML = playing
+      ? '<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>'
+      : '<path d="M8 5v14l11-7z"/>';
+    resetTimer();
+  }
+
+  function shufflePlay() {
+    shuffled = !shuffled;
+    if (shuffled) {
+      order = photos.map((_, i) => i);
+      for (let i = order.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [order[i], order[j]] = [order[j], order[i]];
+      }
+      shuffleBtn.classList.add('active');
+    } else {
+      order = photos.map((_, i) => i);
+      shuffleBtn.classList.remove('active');
+    }
+    pos = 0;
+    showPhoto(currentIndex());
+    resetTimer();
+  }
+
+  function toggleKenBurns() {
+    kenBurns = !kenBurns;
+    kbBtn.classList.toggle('active', kenBurns);
+  }
+
+  function toggleFit() {
+    fillMode = !fillMode;
+    fitBtn.classList.toggle('active', fillMode);
+    showPhoto(currentIndex()); // redraw with new mode
+    resetTimer();
+  }
+
+  function cycleSpeed() {
+    speedIdx = (speedIdx + 1) % speeds.length;
+    speedLabel.textContent = `${speeds[speedIdx]}s`;
+    resetTimer();
+  }
+
+  function toggleFullscreen() {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.();
+    } else {
+      document.exitFullscreen?.();
+    }
+  }
+
+  function exitToSetup() {
+    clearInterval(timer);
+    stage.innerHTML = '';
+    setup.classList.remove('hidden');
+    controls.classList.remove('visible');
+    counter.classList.remove('visible');
+    checkSavedPhotos();
+  }
+
+  // ============ Controls visibility ============
+  function showControls() {
+    controls.classList.add('visible');
+    counter.classList.add('visible');
+    clearTimeout(controlsTimer);
+    controlsTimer = setTimeout(() => {
+      controls.classList.remove('visible');
+      counter.classList.remove('visible');
+    }, 3500);
+  }
+
+  document.addEventListener('click', (e) => {
+    if (setup.classList.contains('hidden') && !e.target.closest('.ctrl')) {
+      showControls();
+    }
+  });
+
+  // ============ Photo loading ============
+  function recordsToUrls(records) {
+    photos.forEach(url => URL.revokeObjectURL(url));
+    return records.map(r => URL.createObjectURL(r.blob));
+  }
+
+  async function handleFileSelection(files) {
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+
+    status.textContent = `Saving ${imageFiles.length} photos…`;
+    progressBar.classList.add('visible');
+    progressFill.style.width = '0%';
+
+    await clearPhotos();
+    await savePhotos(imageFiles, (done, total) => {
+      progressFill.style.width = `${(done / total) * 100}%`;
+      status.textContent = `Saving ${done} of ${total}…`;
+    });
+
+    const records = await loadPhotos();
+    photos = recordsToUrls(records);
+    order = photos.map((_, i) => i);
+    pos = 0;
+
+    progressBar.classList.remove('visible');
+    status.textContent = '';
+    startSlideshow();
+  }
+
+  fileInput.addEventListener('change', (e) => handleFileSelection(e.target.files));
+
+  addInput.addEventListener('change', async (e) => {
+    const files = e.target.files;
+    const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (imageFiles.length === 0) return;
+    await savePhotos(imageFiles);
+    const records = await loadPhotos();
+    photos = recordsToUrls(records);
+    order = photos.map((_, i) => i);
+    addInput.value = '';
+  });
+
+  resumeBtn.addEventListener('click', async () => {
+    status.textContent = 'Loading saved photos…';
+    const records = await loadPhotos();
+    if (records.length === 0) {
+      status.textContent = 'No saved photos found.';
+      return;
+    }
+    photos = recordsToUrls(records);
+    order = photos.map((_, i) => i);
+    pos = 0;
+    status.textContent = '';
+    startSlideshow();
+  });
+
+  clearBtn.addEventListener('click', async () => {
+    if (confirm('Delete all saved photos from this iPad?')) {
+      await clearPhotos();
+      checkSavedPhotos();
+    }
+  });
+
+  async function checkSavedPhotos() {
+    try {
+      const count = await countPhotos();
+      if (count > 0) {
+        subtitle.textContent = `${count} photo${count === 1 ? '' : 's'} saved on this iPad`;
+        resumeBtn.style.display = 'inline-block';
+        clearBtn.style.display = 'inline-block';
+      } else {
+        subtitle.textContent = 'Select photos from your iPad to begin';
+        resumeBtn.style.display = 'none';
+        clearBtn.style.display = 'none';
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
+  // ============ Buttons ============
+  playBtn.addEventListener('click', (e) => { e.stopPropagation(); togglePlay(); showControls(); });
+  prevBtn.addEventListener('click', (e) => { e.stopPropagation(); prev(); showControls(); });
+  nextBtn.addEventListener('click', (e) => { e.stopPropagation(); next(); showControls(); });
+  kbBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleKenBurns(); showControls(); });
+  fitBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFit(); showControls(); });
+  shuffleBtn.addEventListener('click', (e) => { e.stopPropagation(); shufflePlay(); showControls(); });
+  speedBtn.addEventListener('click', (e) => { e.stopPropagation(); cycleSpeed(); showControls(); });
+  addBtn.addEventListener('click', (e) => { e.stopPropagation(); addInput.click(); showControls(); });
+  fullBtn.addEventListener('click', (e) => { e.stopPropagation(); toggleFullscreen(); showControls(); });
+  exitBtn.addEventListener('click', (e) => { e.stopPropagation(); exitToSetup(); });
+
+  // Swipe
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => {
+    touchStartX = e.touches[0].clientX;
+  }, { passive: true });
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 60) {
+      if (dx < 0) next(); else prev();
+    }
+  });
+
+  // Keyboard
+  document.addEventListener('keydown', (e) => {
+    if (setup.classList.contains('hidden')) {
+      if (e.key === 'ArrowRight') next();
+      else if (e.key === 'ArrowLeft') prev();
+      else if (e.key === ' ') { e.preventDefault(); togglePlay(); }
+      else if (e.key === 'f') toggleFullscreen();
+    }
+  });
+
+  // Wake lock
+  if ('wakeLock' in navigator) {
+    const requestWake = async () => {
+      try { await navigator.wakeLock.request('screen'); } catch {}
+    };
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') requestWake();
+    });
+    requestWake();
+  }
+
+  checkSavedPhotos();
+</script>
+
+</body>
+</html>
