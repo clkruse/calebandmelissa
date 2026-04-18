@@ -11,8 +11,9 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   html, body {
-    width: 100%;
-    height: 100%;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background: #000;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
@@ -24,7 +25,11 @@
 
   #stage {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
     background: #000;
   }
 
@@ -65,8 +70,8 @@
   }
 
   @keyframes kenburns {
-    0%   { transform: scale(1.0)  translate(0, 0); }
-    100% { transform: scale(1.08) translate(-1%, -0.5%); }
+    0%   { transform: scale(1.02) translate(0.8%, 0.5%); }
+    100% { transform: scale(1.15) translate(-1.5%, -1%); }
   }
 
   /* Fill mode: covers screen, crops to fit */
@@ -399,8 +404,10 @@
   let pos = 0;
   let playing = true;
   let kenBurns = true;
-  let fillMode = false; // false = contain (fit), true = cover (fill/crop)
+  // 'auto' = fill when image orientation matches screen, else fit; 'fill' = always cover
+  let fillMode = 'auto';
   let shuffled = false;
+  const dimsCache = new Map();
   const speeds = [4, 6, 10, 20, 60];
   let speedIdx = 1;
   let timer = null;
@@ -409,12 +416,41 @@
   // ============ Slideshow ============
   function currentIndex() { return order[pos]; }
 
-  function showPhoto(idx) {
+  function loadDims(url) {
+    if (dimsCache.has(url)) return Promise.resolve(dimsCache.get(url));
+    return new Promise(resolve => {
+      const img = new Image();
+      img.onload = () => {
+        const d = { w: img.naturalWidth, h: img.naturalHeight };
+        dimsCache.set(url, d);
+        resolve(d);
+      };
+      img.onerror = () => {
+        const d = { w: 1, h: 1 };
+        dimsCache.set(url, d);
+        resolve(d);
+      };
+      img.src = url;
+    });
+  }
+
+  function resolveCover(dims) {
+    if (fillMode === 'fill') return true;
+    const screenLandscape = window.innerWidth >= window.innerHeight;
+    const imgLandscape = dims.w >= dims.h;
+    return screenLandscape === imgLandscape;
+  }
+
+  async function showPhoto(idx) {
     const url = photos[idx];
+    const dims = await loadDims(url);
+    // Bail if the user navigated away before dims resolved
+    if (photos[currentIndex()] !== url) return;
+
     const slide = document.createElement('div');
     slide.className = 'slide';
     if (kenBurns) slide.classList.add('ken-burns');
-    if (fillMode) slide.classList.add('cover');
+    if (resolveCover(dims)) slide.classList.add('cover');
 
     const backdrop = document.createElement('div');
     backdrop.className = 'backdrop';
@@ -510,8 +546,9 @@
   }
 
   function toggleFit() {
-    fillMode = !fillMode;
-    fitBtn.classList.toggle('active', fillMode);
+    fillMode = fillMode === 'auto' ? 'fill' : 'auto';
+    fitBtn.classList.toggle('active', fillMode === 'fill');
+    fitBtn.title = fillMode === 'fill' ? 'Fill all' : 'Auto (match orientation)';
     showPhoto(currentIndex()); // redraw with new mode
     resetTimer();
   }
