@@ -46,10 +46,12 @@
   /* Blurred backdrop fills letterbox area with soft color from the photo */
   .slide .backdrop {
     position: absolute;
-    inset: -5%;
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    object-fit: cover;
+    object-position: center;
     filter: blur(40px) saturate(1.2) brightness(0.55);
     transform: scale(1.15);
     will-change: transform;
@@ -59,9 +61,10 @@
   .slide .photo {
     position: absolute;
     inset: 0;
-    background-size: contain;
-    background-position: center;
-    background-repeat: no-repeat;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
     will-change: transform;
   }
 
@@ -75,7 +78,7 @@
   }
 
   /* Fill mode: covers screen, crops to fit */
-  .slide.cover .photo { background-size: cover; }
+  .slide.cover .photo { object-fit: cover; }
   .slide.cover .backdrop { display: none; }
 
   /* Setup screen */
@@ -244,6 +247,47 @@
   }
 
   #counter.visible { opacity: 1; }
+
+  #addProgress {
+    position: fixed;
+    top: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 0.75rem 1.25rem;
+    min-width: 240px;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 300;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+    z-index: 20;
+  }
+
+  #addProgress.visible { opacity: 1; }
+
+  #addProgress .text {
+    text-align: center;
+    margin-bottom: 0.5rem;
+  }
+
+  #addProgress .track {
+    width: 100%;
+    height: 2px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  #addProgress .fill {
+    height: 100%;
+    background: #fff;
+    width: 0%;
+    transition: width 0.2s ease;
+  }
 </style>
 </head>
 <body>
@@ -269,6 +313,11 @@
 
 <div id="stage"></div>
 <div id="counter"></div>
+
+<div id="addProgress">
+  <div class="text" id="addProgressText">Adding photos…</div>
+  <div class="track"><div class="fill" id="addProgressFill"></div></div>
+</div>
 
 <div id="controls">
   <button class="ctrl" id="prevBtn" aria-label="Previous">
@@ -325,20 +374,56 @@
     });
   }
 
+  const MAX_IMAGE_DIM = 2732; // iPad Pro 12.9" native long-edge pixels
+  const JPEG_QUALITY = 0.88;
+
+  // Decode + shrink a photo so we keep Safari's decoded-image cache small over long runs.
+  async function processPhoto(file) {
+    let bitmap;
+    try {
+      bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+    } catch {
+      return file; // Unreadable → store original and hope for the best.
+    }
+    const { width, height } = bitmap;
+    const maxSide = Math.max(width, height);
+    const scale = maxSide > MAX_IMAGE_DIM ? MAX_IMAGE_DIM / maxSide : 1;
+    const alreadySmallJpeg = scale === 1 && /jpe?g/i.test(file.type);
+    if (alreadySmallJpeg) {
+      bitmap.close?.();
+      return file;
+    }
+    const w = Math.round(width * scale);
+    const h = Math.round(height * scale);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext('2d').drawImage(bitmap, 0, 0, w, h);
+    bitmap.close?.();
+    const blob = await new Promise(resolve => {
+      canvas.toBlob(b => resolve(b), 'image/jpeg', JPEG_QUALITY);
+    });
+    // Free the canvas backing store aggressively.
+    canvas.width = 0;
+    canvas.height = 0;
+    return blob || file;
+  }
+
   async function savePhotos(files, onProgress) {
     const db = await openDB();
     let done = 0;
+    onProgress?.(0, files.length);
     for (const file of files) {
-      const buf = await file.arrayBuffer();
-      const blob = new Blob([buf], { type: file.type });
+      const blob = await processPhoto(file);
       await new Promise((res, rej) => {
         const tx = db.transaction(STORE, 'readwrite');
-        const r = tx.objectStore(STORE).add({ blob, name: file.name, addedAt: Date.now() });
-        r.onsuccess = () => res();
-        r.onerror = () => rej(r.error);
+        tx.oncomplete = () => res();
+        tx.onerror = () => rej(tx.error);
+        tx.objectStore(STORE).add({ blob, name: file.name, addedAt: Date.now() });
       });
       done++;
       onProgress?.(done, files.length);
+      await new Promise(r => setTimeout(r, 0));
     }
   }
 
@@ -397,6 +482,9 @@
   const addBtn = document.getElementById('addBtn');
   const fullBtn = document.getElementById('fullBtn');
   const exitBtn = document.getElementById('exitBtn');
+  const addProgress = document.getElementById('addProgress');
+  const addProgressText = document.getElementById('addProgressText');
+  const addProgressFill = document.getElementById('addProgressFill');
 
   // ============ State ============
   let photos = [];
@@ -452,13 +540,15 @@
     if (kenBurns) slide.classList.add('ken-burns');
     if (resolveCover(dims)) slide.classList.add('cover');
 
-    const backdrop = document.createElement('div');
+    const backdrop = document.createElement('img');
     backdrop.className = 'backdrop';
-    backdrop.style.backgroundImage = `url("${url}")`;
+    backdrop.decoding = 'async';
+    backdrop.src = url;
 
-    const photo = document.createElement('div');
+    const photo = document.createElement('img');
     photo.className = 'photo';
-    photo.style.backgroundImage = `url("${url}")`;
+    photo.decoding = 'async';
+    photo.src = url;
 
     slide.appendChild(backdrop);
     slide.appendChild(photo);
@@ -470,14 +560,23 @@
 
     const oldSlides = stage.querySelectorAll('.slide');
     if (oldSlides.length > 2) {
-      for (let i = 0; i < oldSlides.length - 2; i++) oldSlides[i].remove();
+      for (let i = 0; i < oldSlides.length - 2; i++) disposeSlide(oldSlides[i]);
     }
     setTimeout(() => {
       const stillOld = stage.querySelectorAll('.slide');
-      if (stillOld.length > 1) stillOld[0].remove();
+      if (stillOld.length > 1) disposeSlide(stillOld[0]);
     }, 2000);
 
     updateCounter();
+  }
+
+  // Clear image sources before detaching so Safari can release the decoded bitmap.
+  function disposeSlide(slide) {
+    slide.querySelectorAll('img').forEach(img => {
+      img.removeAttribute('src');
+      img.src = '';
+    });
+    slide.remove();
   }
 
   function updateCounter() {
@@ -629,11 +728,31 @@
     const files = e.target.files;
     const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
     if (imageFiles.length === 0) return;
-    await savePhotos(imageFiles);
-    const records = await loadPhotos();
-    photos = recordsToUrls(records);
-    order = photos.map((_, i) => i);
-    addInput.value = '';
+
+    addProgress.classList.add('visible');
+    addProgressText.textContent = `Adding 0 of ${imageFiles.length}…`;
+    addProgressFill.style.width = '0%';
+
+    try {
+      await savePhotos(imageFiles, (done, total) => {
+        addProgressText.textContent = `Adding ${done} of ${total}…`;
+        addProgressFill.style.width = `${(done / total) * 100}%`;
+      });
+
+      addProgressText.textContent = 'Loading library…';
+      const records = await loadPhotos();
+      photos = recordsToUrls(records);
+      order = photos.map((_, i) => i);
+
+      addProgressText.textContent = `Added ${imageFiles.length} photo${imageFiles.length === 1 ? '' : 's'}`;
+      addProgressFill.style.width = '100%';
+    } catch (err) {
+      console.error(err);
+      addProgressText.textContent = 'Error adding photos';
+    } finally {
+      addInput.value = '';
+      setTimeout(() => addProgress.classList.remove('visible'), 1200);
+    }
   });
 
   resumeBtn.addEventListener('click', async () => {
