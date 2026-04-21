@@ -10,10 +10,15 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  :root {
+    /* --app-h is driven from JS (window.innerHeight) — iPadOS standalone PWAs
+       otherwise compute 100vh/100dvh shorter than the real viewport. */
+    --app-h: 100vh;
+  }
+
   html, body {
     width: 100vw;
-    height: 100vh;
-    height: -webkit-fill-available;
+    height: var(--app-h);
     background: #000;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
@@ -28,8 +33,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
-    height: -webkit-fill-available;
+    height: var(--app-h);
     background: #000;
   }
 
@@ -360,6 +364,16 @@
 <input type="file" id="addInput" accept="image/*" multiple>
 
 <script>
+  // ============ Viewport height ============
+  function setAppHeight() {
+    document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`);
+  }
+  setAppHeight();
+  window.addEventListener('resize', setAppHeight);
+  window.addEventListener('orientationchange', setAppHeight);
+  // iPadOS sometimes reports a stale innerHeight right after orientation change.
+  window.addEventListener('orientationchange', () => requestAnimationFrame(setAppHeight));
+
   // ============ IndexedDB ============
   const DB_NAME = 'photoFrameDB';
   const STORE = 'photos';
@@ -615,9 +629,19 @@
     clearInterval(timer);
     if (playing) {
       timer = setInterval(() => {
-        pos = (pos + 1) % order.length;
+        advancePos();
         showPhoto(currentIndex());
       }, speeds[speedIdx] * 1000);
+    }
+  }
+
+  // Advance by one; reshuffle whenever we wrap back to the start so each pass
+  // through the library uses a fresh order instead of replaying the same sequence.
+  function advancePos() {
+    pos = pos + 1;
+    if (pos >= order.length) {
+      if (shuffled) order = buildOrder();
+      pos = 0;
     }
   }
 
@@ -844,6 +868,18 @@
     });
     requestWake();
   }
+
+  // Re-shuffle whenever the app returns to the foreground so the sequence
+  // isn't frozen from the last session.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    if (!shuffled || photos.length === 0) return;
+    order = buildOrder();
+    pos = 0;
+    if (!setup.classList.contains('hidden')) return;
+    showPhoto(currentIndex());
+    resetTimer();
+  });
 
   shuffleBtn.classList.toggle('active', shuffled);
   checkSavedPhotos();
