@@ -10,15 +10,10 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
-  :root {
-    /* --app-h is set from JS to window.innerHeight — works around iPadOS
-       standalone PWAs where 100vh / 100dvh don't reach the physical bottom. */
-    --app-h: 100vh;
-  }
-
   html, body {
     width: 100vw;
-    height: var(--app-h);
+    height: 100vh;
+    height: -webkit-fill-available;
     background: #000;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
@@ -33,7 +28,8 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: var(--app-h);
+    height: 100vh;
+    height: -webkit-fill-available;
     background: #000;
   }
 
@@ -364,20 +360,6 @@
 <input type="file" id="addInput" accept="image/*" multiple>
 
 <script>
-  // ============ Viewport height fix ============
-  // iPadOS standalone PWAs sometimes compute 100vh/100dvh smaller than the
-  // physical screen, leaving a black strip at the bottom. Drive layout from
-  // window.innerHeight instead.
-  function setAppHeight() {
-    document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`);
-  }
-  setAppHeight();
-  window.addEventListener('resize', setAppHeight);
-  window.addEventListener('orientationchange', setAppHeight);
-  // iPadOS occasionally reports a stale innerHeight right after an orientation
-  // change; re-measure on the next frame to catch the final value.
-  window.addEventListener('orientationchange', () => requestAnimationFrame(setAppHeight));
-
   // ============ IndexedDB ============
   const DB_NAME = 'photoFrameDB';
   const STORE = 'photos';
