@@ -10,10 +10,15 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  :root {
+    /* --app-h is set from JS to window.innerHeight — works around iPadOS
+       standalone PWAs where 100vh / 100dvh don't reach the physical bottom. */
+    --app-h: 100vh;
+  }
+
   html, body {
     width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    height: var(--app-h);
     background: #000;
     overflow: hidden;
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
@@ -28,8 +33,7 @@
     top: 0;
     left: 0;
     width: 100vw;
-    height: 100vh;
-    height: 100dvh;
+    height: var(--app-h);
     background: #000;
   }
 
@@ -227,7 +231,12 @@
 
   .ctrl:active { transform: scale(0.9); background: rgba(255,255,255,0.25); }
   .ctrl svg { width: 18px; height: 18px; fill: currentColor; }
-  .ctrl.active { background: rgba(255,255,255,0.3); }
+  .ctrl.active {
+    background: #fff;
+    color: #000;
+    border-color: #fff;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.35);
+  }
 
   #counter {
     position: fixed;
@@ -355,6 +364,20 @@
 <input type="file" id="addInput" accept="image/*" multiple>
 
 <script>
+  // ============ Viewport height fix ============
+  // iPadOS standalone PWAs sometimes compute 100vh/100dvh smaller than the
+  // physical screen, leaving a black strip at the bottom. Drive layout from
+  // window.innerHeight instead.
+  function setAppHeight() {
+    document.documentElement.style.setProperty('--app-h', `${window.innerHeight}px`);
+  }
+  setAppHeight();
+  window.addEventListener('resize', setAppHeight);
+  window.addEventListener('orientationchange', setAppHeight);
+  // iPadOS occasionally reports a stale innerHeight right after an orientation
+  // change; re-measure on the next frame to catch the final value.
+  window.addEventListener('orientationchange', () => requestAnimationFrame(setAppHeight));
+
   // ============ IndexedDB ============
   const DB_NAME = 'photoFrameDB';
   const STORE = 'photos';
@@ -494,7 +517,7 @@
   let kenBurns = true;
   // 'auto' = fill when image orientation matches screen, else fit; 'fill' = always cover
   let fillMode = 'auto';
-  let shuffled = false;
+  let shuffled = true;
   const dimsCache = new Map();
   const speeds = [4, 6, 10, 20, 60];
   let speedIdx = 1;
@@ -503,6 +526,17 @@
 
   // ============ Slideshow ============
   function currentIndex() { return order[pos]; }
+
+  function buildOrder() {
+    const next = photos.map((_, i) => i);
+    if (shuffled) {
+      for (let i = next.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [next[i], next[j]] = [next[j], next[i]];
+      }
+    }
+    return next;
+  }
 
   function loadDims(url) {
     if (dimsCache.has(url)) return Promise.resolve(dimsCache.get(url));
@@ -623,17 +657,8 @@
 
   function shufflePlay() {
     shuffled = !shuffled;
-    if (shuffled) {
-      order = photos.map((_, i) => i);
-      for (let i = order.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [order[i], order[j]] = [order[j], order[i]];
-      }
-      shuffleBtn.classList.add('active');
-    } else {
-      order = photos.map((_, i) => i);
-      shuffleBtn.classList.remove('active');
-    }
+    shuffleBtn.classList.toggle('active', shuffled);
+    order = buildOrder();
     pos = 0;
     showPhoto(currentIndex());
     resetTimer();
@@ -714,7 +739,7 @@
 
     const records = await loadPhotos();
     photos = recordsToUrls(records);
-    order = photos.map((_, i) => i);
+    order = buildOrder();
     pos = 0;
 
     progressBar.classList.remove('visible');
@@ -742,7 +767,7 @@
       addProgressText.textContent = 'Loading library…';
       const records = await loadPhotos();
       photos = recordsToUrls(records);
-      order = photos.map((_, i) => i);
+      order = buildOrder();
 
       addProgressText.textContent = `Added ${imageFiles.length} photo${imageFiles.length === 1 ? '' : 's'}`;
       addProgressFill.style.width = '100%';
@@ -763,7 +788,7 @@
       return;
     }
     photos = recordsToUrls(records);
-    order = photos.map((_, i) => i);
+    order = buildOrder();
     pos = 0;
     status.textContent = '';
     startSlideshow();
@@ -838,6 +863,7 @@
     requestWake();
   }
 
+  shuffleBtn.classList.toggle('active', shuffled);
   checkSavedPhotos();
 </script>
 
