@@ -393,8 +393,10 @@
     });
   }
 
-  const MAX_IMAGE_DIM = 2732; // iPad Pro 12.9" native long-edge pixels
-  const JPEG_QUALITY = 0.88;
+  // iPad Pro native long-edge is 2732; we store a bit larger so the Ken Burns
+  // zoom (up to 1.15×) never has to upscale.
+  const MAX_IMAGE_DIM = 3200;
+  const JPEG_QUALITY = 0.95;
 
   // Decode + shrink a photo so we keep Safari's decoded-image cache small over long runs.
   async function processPhoto(file) {
