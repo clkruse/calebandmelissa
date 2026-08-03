@@ -1,0 +1,2813 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Elemental Brew</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #080706;
+      --roast: #14110e;
+      --bark: #2c241c;
+      --foam: #f0ebe3;
+      --mist: #9e9488;
+      --copper: #e09540;
+      --ember: #d8ff3a;
+      --ember-hot: #f0ff8a;
+      --ember-dim: rgba(216, 255, 58, 0.14);
+      --steam: rgba(240, 235, 227, 0.06);
+      --liquid-colombian: #3a2012;
+      --liquid-breakfast: #6e4324;
+      --liquid-decaf: #4c3828;
+      --liquid-water: #6eb0cc;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+      --spot-x: 50%;
+      --spot-y: 40%;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: "DM Sans", sans-serif;
+      background: var(--ink);
+      color: var(--foam);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      cursor: none;
+    }
+
+    @media (hover: none), (pointer: coarse) {
+      body { cursor: auto; }
+      .cursor, .cursor-dot { display: none !important; }
+    }
+
+    /* Film grain */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 10000;
+      opacity: 0.055;
+      mix-blend-mode: overlay;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* Cursor spotlight */
+    .ambient {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background:
+        radial-gradient(ellipse 50vw 40vh at var(--spot-x) var(--spot-y), rgba(224, 149, 64, 0.11), transparent 70%),
+        radial-gradient(ellipse 80vw 50vh at 80% 20%, rgba(216, 255, 58, 0.04), transparent 50%),
+        radial-gradient(ellipse 60vw 60vh at 10% 90%, rgba(58, 32, 18, 0.5), transparent 55%);
+      transition: background 0.15s linear;
+    }
+
+    /* Custom cursor */
+    .cursor {
+      position: fixed;
+      width: 40px;
+      height: 40px;
+      border: 1.5px solid rgba(216, 255, 58, 0.5);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10001;
+      translate: -50% -50%;
+      transition: width 0.3s var(--ease-out), height 0.3s var(--ease-out), background 0.3s ease, border-color 0.3s ease;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-dot {
+      position: fixed;
+      width: 6px;
+      height: 6px;
+      background: var(--ember);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10002;
+      translate: -50% -50%;
+      transition: transform 0.15s var(--ease-out);
+    }
+
+    .cursor.hovering {
+      width: 64px;
+      height: 64px;
+      background: rgba(216, 255, 58, 0.12);
+      border-color: var(--ember);
+    }
+
+    button, [role="button"], .coffee-option, .choice, .tip-btn, .star {
+      cursor: none;
+    }
+
+    button {
+      font-family: inherit;
+      border: none;
+      background: none;
+      color: inherit;
+    }
+
+    /* ═══════════ HERO ═══════════ */
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: clamp(1.5rem, 4vw, 3.5rem);
+      padding-bottom: clamp(2.5rem, 7vw, 5rem);
+      overflow: hidden;
+    }
+
+    .hero.exiting {
+      animation: heroExit 0.7s var(--ease-out) forwards;
+    }
+
+    @keyframes heroExit {
+      to { opacity: 0; transform: scale(1.04); filter: blur(8px); }
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background:
+        linear-gradient(180deg, transparent 10%, var(--ink) 92%),
+        radial-gradient(ellipse 70% 55% at 72% 38%, rgba(70, 38, 18, 0.85) 0%, transparent 70%),
+        radial-gradient(ellipse 45% 35% at 15% 75%, rgba(224, 149, 64, 0.22) 0%, transparent 60%),
+        var(--roast);
+    }
+
+    .hero-grid {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      opacity: 0.04;
+      background-image:
+        linear-gradient(rgba(240, 235, 227, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(240, 235, 227, 0.5) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse at 60% 40%, black 20%, transparent 70%);
+    }
+
+    .steam-field {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .steam-wisp {
+      position: absolute;
+      bottom: 12%;
+      width: 90px;
+      height: 220px;
+      background: radial-gradient(ellipse at center bottom, rgba(240, 235, 227, 0.22), transparent 70%);
+      filter: blur(22px);
+      animation: steamRise 7s ease-in-out infinite;
+      opacity: 0;
+    }
+
+    .steam-wisp:nth-child(1) { left: 15%; animation-delay: 0s; width: 110px; }
+    .steam-wisp:nth-child(2) { left: 38%; animation-delay: 1.6s; width: 70px; }
+    .steam-wisp:nth-child(3) { left: 55%; animation-delay: 0.7s; width: 95px; }
+    .steam-wisp:nth-child(4) { left: 72%; animation-delay: 2.8s; width: 65px; }
+    .steam-wisp:nth-child(5) { left: 28%; animation-delay: 3.8s; width: 88px; }
+    .steam-wisp:nth-child(6) { left: 62%; animation-delay: 5.1s; width: 75px; }
+
+    @keyframes steamRise {
+      0% { opacity: 0; transform: translateY(50px) scaleX(1) rotate(0deg); }
+      15% { opacity: 0.75; }
+      55% { opacity: 0.3; }
+      100% { opacity: 0; transform: translateY(-320px) scaleX(1.8) rotate(8deg); }
+    }
+
+    /* Floating spark particles */
+    .sparks {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      overflow: hidden;
+    }
+
+    .spark {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      background: var(--ember);
+      border-radius: 50%;
+      opacity: 0;
+      animation: sparkFloat 5s ease-in-out infinite;
+      box-shadow: 0 0 8px var(--ember);
+    }
+
+    .spark:nth-child(1) { left: 20%; bottom: 30%; animation-delay: 0s; }
+    .spark:nth-child(2) { left: 45%; bottom: 45%; animation-delay: 1.2s; width: 2px; height: 2px; }
+    .spark:nth-child(3) { left: 70%; bottom: 25%; animation-delay: 2.4s; }
+    .spark:nth-child(4) { left: 55%; bottom: 55%; animation-delay: 0.6s; width: 2px; height: 2px; }
+    .spark:nth-child(5) { left: 35%; bottom: 20%; animation-delay: 3.5s; }
+    .spark:nth-child(6) { left: 80%; bottom: 40%; animation-delay: 1.8s; }
+
+    @keyframes sparkFloat {
+      0%, 100% { opacity: 0; transform: translateY(0); }
+      20% { opacity: 0.9; }
+      80% { opacity: 0.3; }
+      100% { opacity: 0; transform: translateY(-120px) translateX(20px); }
+    }
+
+    .hero-cup {
+      position: absolute;
+      right: clamp(-2%, 1vw, 4%);
+      bottom: 4%;
+      width: min(34vw, 340px);
+      aspect-ratio: 4 / 5;
+      z-index: 1;
+      opacity: 0;
+      animation: heroCupIn 1.6s var(--ease-out) 0.25s forwards;
+      pointer-events: none;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 22%, black 100%);
+      mask-image: linear-gradient(90deg, transparent 0%, black 22%, black 100%);
+    }
+
+    .hero-cup svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      shape-rendering: geometricPrecision;
+      /* SVG-native shadow — avoids filter rasterization blur on the artwork */
+      filter: none;
+    }
+
+    .hero-cup-parallax {
+      width: 100%;
+      height: 100%;
+      transition: transform 0.45s var(--ease-out);
+      will-change: transform;
+    }
+
+    .hero-cup .wave-a {
+      animation: waveShift 3.4s ease-in-out infinite;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+
+    .hero-cup .wave-b {
+      animation: waveShift 4.2s ease-in-out infinite reverse;
+      transform-origin: center;
+      transform-box: fill-box;
+    }
+
+    .hero-cup .steam-path {
+      stroke-dasharray: 80;
+      animation: steamDraw 4s ease-in-out infinite;
+    }
+
+    .hero-cup .steam-path:nth-child(2) { animation-delay: 0.8s; }
+    .hero-cup .steam-path:nth-child(3) { animation-delay: 1.6s; }
+
+    @keyframes waveShift {
+      0%, 100% { transform: translateX(0); }
+      50% { transform: translateX(-10px); }
+    }
+
+    @keyframes steamDraw {
+      0% { opacity: 0; stroke-dashoffset: 80; }
+      30% { opacity: 0.55; }
+      100% { opacity: 0; stroke-dashoffset: -40; }
+    }
+
+    @keyframes heroCupIn {
+      from { opacity: 0; transform: translateY(80px) rotate(-4deg) scale(0.94); }
+      to { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      /* Leave room for the cup; never let the brand column exceed available space */
+      max-width: min(36rem, calc(100vw - 3rem));
+      width: 100%;
+    }
+
+    .brand {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      /* Cap size so the 9-letter word always fits the column */
+      font-size: clamp(2.4rem, 6.5vw, 5.25rem);
+      line-height: 1.02;
+      letter-spacing: -0.03em;
+      margin-bottom: 1.5rem;
+      overflow: visible;
+      /* Optical padding so heavy Syne glyphs aren't flush-clipped at the edge */
+      padding-inline: 0.02em 0.06em;
+    }
+
+    .brand .line {
+      display: block;
+      overflow: visible;
+    }
+
+    .brand .word {
+      display: inline-block;
+      opacity: 0;
+      transform: translateY(1.1rem);
+      filter: blur(6px);
+      animation: wordRise 0.95s var(--ease-out) forwards;
+      will-change: transform, opacity, filter;
+      /* Prevent any mid-word wrap/clip */
+      white-space: nowrap;
+    }
+
+    .brand .line:nth-child(1) .word { animation-delay: 0.2s; }
+    .brand .line:nth-child(2) .word { animation-delay: 0.35s; }
+
+    @keyframes wordRise {
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+
+    .brand .accent-word {
+      color: var(--ember);
+      position: relative;
+      text-shadow: 0 0 60px rgba(216, 255, 58, 0.35);
+    }
+
+    .brand .accent-word::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0.02em;
+      width: 0;
+      height: 0.085em;
+      background: linear-gradient(90deg, var(--ember), var(--ember-hot));
+      box-shadow: 0 0 20px rgba(216, 255, 58, 0.6);
+      animation: underlineGrow 0.9s var(--ease-out) 1.1s forwards;
+      border-radius: 1px;
+    }
+
+    @keyframes underlineGrow { to { width: 100%; } }
+
+    .hero-tagline {
+      font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+      color: var(--mist);
+      max-width: 30ch;
+      line-height: 1.55;
+      margin-bottom: 2.25rem;
+      opacity: 0;
+      animation: riseIn 1s var(--ease-out) 0.65s forwards;
+    }
+
+    .cta-start {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.85rem;
+      padding: 1.1rem 2rem;
+      background: var(--ember);
+      color: var(--ink);
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: 0.01em;
+      border-radius: 999px;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.4s var(--ease-spring), box-shadow 0.4s ease;
+      opacity: 0;
+      animation: riseIn 1s var(--ease-out) 0.8s forwards;
+      box-shadow:
+        0 0 0 0 rgba(216, 255, 58, 0.5),
+        0 8px 32px rgba(216, 255, 58, 0.25);
+    }
+
+    .cta-start::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
+      translate: -100% 0;
+      transition: none;
+    }
+
+    .cta-start:hover {
+      transform: scale(1.05);
+      box-shadow:
+        0 0 50px 8px rgba(216, 255, 58, 0.4),
+        0 12px 40px rgba(216, 255, 58, 0.3);
+    }
+
+    .cta-start:hover::before {
+      animation: sheen 0.7s var(--ease-out);
+    }
+
+    @keyframes sheen {
+      to { translate: 100% 0; }
+    }
+
+    .cta-start:active { transform: scale(0.96); }
+
+    .cta-start .arrow {
+      transition: transform 0.35s var(--ease-out);
+    }
+
+    .cta-start:hover .arrow { transform: translateY(4px); }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(32px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 1.5rem;
+      right: clamp(1.5rem, 4vw, 3.5rem);
+      z-index: 2;
+      font-family: "Syne", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--mist);
+      opacity: 0;
+      animation: riseIn 1s var(--ease-out) 1.2s forwards;
+      display: none;
+    }
+
+    @media (min-width: 900px) {
+      .scroll-hint { display: block; }
+    }
+
+    /* ═══════════ ORDER ═══════════ */
+    .order-stage {
+      position: relative;
+      z-index: 1;
+      display: none;
+      min-height: 100svh;
+      padding: clamp(1.25rem, 3vw, 2.5rem);
+      padding-bottom: 9rem;
+    }
+
+    .order-stage.active {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      animation: stageEnter 0.8s var(--ease-out);
+    }
+
+    @media (min-width: 900px) {
+      .order-stage.active {
+        grid-template-columns: 1fr minmax(280px, 360px);
+        align-items: start;
+        gap: 3.5rem;
+        padding-right: clamp(1.5rem, 4vw, 3rem);
+      }
+    }
+
+    @keyframes stageEnter {
+      from { opacity: 0; transform: translateY(40px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .order-flow { max-width: 700px; }
+
+    .stage-header {
+      margin-bottom: 2.75rem;
+      opacity: 0;
+      animation: riseIn 0.8s var(--ease-out) 0.1s forwards;
+    }
+
+    .stage-eyebrow {
+      font-family: "Syne", sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ember);
+      margin-bottom: 0.7rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .stage-eyebrow::before {
+      content: "";
+      width: 24px;
+      height: 2px;
+      background: var(--ember);
+      box-shadow: 0 0 10px var(--ember);
+    }
+
+    .stage-header h2 {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 5vw, 3rem);
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+    }
+
+    .progress-track {
+      margin-top: 1.25rem;
+      height: 2px;
+      background: var(--bark);
+      border-radius: 2px;
+      overflow: hidden;
+      max-width: 200px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--copper), var(--ember));
+      box-shadow: 0 0 12px rgba(216, 255, 58, 0.5);
+      transition: width 0.6s var(--ease-out);
+    }
+
+    .step {
+      margin-bottom: 2.75rem;
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.65s var(--ease-out), transform 0.65s var(--ease-out);
+    }
+
+    .step.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .step-label {
+      display: flex;
+      align-items: baseline;
+      gap: 0.85rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .step-num {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--ember);
+      letter-spacing: 0.1em;
+      text-shadow: 0 0 12px rgba(216, 255, 58, 0.4);
+    }
+
+    .step-title {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.2rem;
+      letter-spacing: -0.01em;
+    }
+
+    /* Name input */
+    .name-wrap input {
+      width: 100%;
+      max-width: 420px;
+      padding: 1rem 1.1rem;
+      background: var(--roast);
+      border: 1px solid var(--bark);
+      color: var(--foam);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .name-wrap input:focus {
+      border-color: var(--ember);
+      box-shadow: 0 0 0 3px rgba(216, 255, 58, 0.15);
+    }
+
+    .name-wrap input::placeholder { color: var(--mist); opacity: 0.7; }
+
+    /* Coffee options */
+    .coffee-grid { display: grid; gap: 0.4rem; }
+
+    .coffee-option {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 1.15rem;
+      padding: 1.2rem 1.3rem;
+      border: 1px solid transparent;
+      border-bottom: 1px solid var(--bark);
+      transition:
+        background 0.4s var(--ease-soft),
+        border-color 0.4s ease,
+        transform 0.4s var(--ease-spring),
+        box-shadow 0.4s ease;
+      overflow: hidden;
+    }
+
+    .coffee-option .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(216, 255, 58, 0.25);
+      transform: scale(0);
+      pointer-events: none;
+      animation: rippleOut 0.6s var(--ease-out) forwards;
+    }
+
+    @keyframes rippleOut {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    .coffee-option::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(105deg, var(--ember-dim) 0%, transparent 55%);
+      opacity: 0;
+      transition: opacity 0.4s ease;
+    }
+
+    .coffee-option:hover {
+      background: var(--steam);
+      border-color: rgba(216, 255, 58, 0.15);
+    }
+
+    .coffee-option:hover::before { opacity: 0.6; }
+
+    .coffee-option.selected {
+      border-color: var(--ember);
+      background: var(--ember-dim);
+      transform: scale(1.015);
+      box-shadow:
+        0 0 0 1px rgba(216, 255, 58, 0.2),
+        0 8px 32px rgba(216, 255, 58, 0.08);
+    }
+
+    .coffee-option.selected::before { opacity: 1; }
+
+    .coffee-swatch {
+      position: relative;
+      z-index: 1;
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid rgba(240, 235, 227, 0.12);
+      transition: transform 0.5s var(--ease-spring), box-shadow 0.5s ease, border-color 0.4s ease;
+    }
+
+    .coffee-swatch::after {
+      content: "";
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.25), transparent 50%);
+    }
+
+    .coffee-option.selected .coffee-swatch {
+      transform: scale(1.18);
+      box-shadow: 0 0 28px rgba(216, 255, 58, 0.35);
+      border-color: var(--ember);
+    }
+
+    .coffee-option[data-coffee="colombian"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #7a4528, #1e1008); }
+    .coffee-option[data-coffee="breakfast"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #b07040, #3e2410); }
+    .coffee-option[data-coffee="decaf"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #8a6848, #32241a); }
+    .coffee-option[data-coffee="water"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #c4e8f5, #3a8098); }
+
+    .coffee-info { position: relative; z-index: 1; }
+
+    .coffee-name {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.08rem;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.25rem;
+    }
+
+    .coffee-desc {
+      font-size: 0.88rem;
+      color: var(--mist);
+      line-height: 1.4;
+    }
+
+    .coffee-check {
+      position: relative;
+      z-index: 1;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: 1.5px solid var(--bark);
+      display: grid;
+      place-items: center;
+      transition: all 0.4s var(--ease-spring);
+    }
+
+    .coffee-option.selected .coffee-check {
+      background: var(--ember);
+      border-color: var(--ember);
+      transform: scale(1.15);
+      box-shadow: 0 0 16px rgba(216, 255, 58, 0.5);
+    }
+
+    .coffee-check svg {
+      width: 12px;
+      height: 12px;
+      opacity: 0;
+      color: var(--ink);
+      transition: opacity 0.25s ease;
+    }
+
+    .coffee-option.selected .coffee-check svg { opacity: 1; }
+
+    /* Choices */
+    .choice-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.7rem;
+    }
+
+    .choice {
+      position: relative;
+      padding: 1.35rem 1rem;
+      text-align: center;
+      border: 1px solid var(--bark);
+      background: transparent;
+      overflow: hidden;
+      transition:
+        border-color 0.35s ease,
+        transform 0.4s var(--ease-spring),
+        box-shadow 0.35s ease;
+    }
+
+    .choice::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, var(--ember-hot), var(--ember));
+      transform: translateY(101%);
+      transition: transform 0.45s var(--ease-out);
+      z-index: 0;
+    }
+
+    .choice:hover {
+      border-color: rgba(216, 255, 58, 0.45);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    }
+
+    .choice.selected {
+      border-color: var(--ember);
+      color: var(--ink);
+      box-shadow: 0 0 28px rgba(216, 255, 58, 0.2);
+    }
+
+    .choice.selected::after { transform: translateY(0); }
+
+    .choice-name,
+    .choice-meta { position: relative; z-index: 1; }
+
+    .choice-name {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.08rem;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+    }
+
+    .choice-meta {
+      font-size: 0.8rem;
+      color: var(--mist);
+      transition: color 0.35s ease;
+    }
+
+    .choice.selected .choice-meta { color: rgba(8, 7, 6, 0.6); }
+
+    .choice-icon { font-size: 1.15rem; line-height: 1; }
+
+    .size-row .choice-name {
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .cup-glyph {
+      display: block;
+      margin: 0 auto;
+      opacity: 0.7;
+      transition: opacity 0.3s ease, transform 0.4s var(--ease-spring);
+      color: currentColor;
+    }
+
+    .cup-glyph svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .choice.selected .cup-glyph {
+      opacity: 1;
+      transform: scale(1.08);
+    }
+
+    .cup-glyph.small { width: 28px; height: 32px; }
+    .cup-glyph.medium { width: 34px; height: 40px; }
+    .cup-glyph.large { width: 40px; height: 48px; }
+
+    /* Live cup panel */
+    .cup-preview {
+      display: none;
+      position: sticky;
+      top: 2rem;
+      padding: 2.25rem 1.75rem;
+      text-align: center;
+      background: linear-gradient(165deg, rgba(36, 28, 22, 0.7), rgba(16, 13, 11, 0.5));
+      border: 1px solid rgba(240, 235, 227, 0.06);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    @media (min-width: 900px) {
+      .cup-preview { display: block; animation: riseIn 0.8s var(--ease-out) 0.3s both; }
+    }
+
+    .cup-preview-label {
+      font-family: "Syne", sans-serif;
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mist);
+      margin-bottom: 1.75rem;
+    }
+
+    .cup-stage {
+      position: relative;
+      width: 200px;
+      height: 260px;
+      margin: 0 auto 1.75rem;
+    }
+
+    /* Progress ring */
+    .cup-ring {
+      position: absolute;
+      inset: -8px;
+      pointer-events: none;
+    }
+
+    .cup-ring svg {
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .cup-ring circle {
+      fill: none;
+      stroke-width: 2;
+    }
+
+    .cup-ring .track { stroke: var(--bark); }
+
+    .cup-ring .fill {
+      stroke: var(--ember);
+      stroke-linecap: round;
+      stroke-dasharray: 628;
+      stroke-dashoffset: 628;
+      transition: stroke-dashoffset 0.7s var(--ease-out);
+      filter: drop-shadow(0 0 6px rgba(216, 255, 58, 0.5));
+    }
+
+    .cup-steam {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      translate: -50% 0;
+      width: 110px;
+      height: 70px;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+      z-index: 4;
+    }
+
+    .cup-steam.active { opacity: 1; }
+
+    .cup-steam span {
+      position: absolute;
+      bottom: 0;
+      width: 20px;
+      height: 45px;
+      background: radial-gradient(ellipse, rgba(240, 235, 227, 0.4), transparent);
+      filter: blur(7px);
+      border-radius: 50%;
+      animation: cupSteam 2.8s ease-in-out infinite;
+    }
+
+    .cup-steam span:nth-child(1) { left: 18%; animation-delay: 0s; }
+    .cup-steam span:nth-child(2) { left: 40%; animation-delay: 0.55s; height: 55px; width: 24px; }
+    .cup-steam span:nth-child(3) { left: 60%; animation-delay: 1.1s; }
+
+    @keyframes cupSteam {
+      0%, 100% { transform: translateY(0) scaleX(1); opacity: 0.25; }
+      50% { transform: translateY(-36px) scaleX(1.5); opacity: 0.75; }
+    }
+
+    .cup-ice {
+      position: absolute;
+      top: 62px;
+      left: 50%;
+      translate: -50% 0;
+      width: 95px;
+      height: 55px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      pointer-events: none;
+      z-index: 3;
+    }
+
+    .cup-ice.active { opacity: 1; }
+
+    .cup-ice span {
+      position: absolute;
+      background: linear-gradient(135deg, rgba(200, 230, 255, 0.45), rgba(160, 210, 255, 0.2));
+      border: 1px solid rgba(200, 230, 255, 0.45);
+      backdrop-filter: blur(2px);
+      animation: iceBob 3.2s ease-in-out infinite;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .cup-ice span:nth-child(1) {
+      width: 24px; height: 17px; left: 12%; top: 10px;
+      transform: rotate(18deg); border-radius: 3px; animation-delay: 0s;
+    }
+    .cup-ice span:nth-child(2) {
+      width: 19px; height: 15px; left: 42%; top: 2px;
+      transform: rotate(-14deg); border-radius: 2px; animation-delay: 0.4s;
+    }
+    .cup-ice span:nth-child(3) {
+      width: 21px; height: 16px; left: 64%; top: 16px;
+      transform: rotate(10deg); border-radius: 3px; animation-delay: 0.85s;
+    }
+
+    @keyframes iceBob {
+      0%, 100% { translate: 0 0; }
+      50% { translate: 3px -5px; }
+    }
+
+    .live-cup {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      translate: -50% 0;
+      width: 130px;
+      height: 162px;
+      transition: width 0.55s var(--ease-out), height 0.55s var(--ease-out);
+      animation: cupBob 4s ease-in-out infinite;
+      animation-play-state: paused;
+    }
+
+    .live-cup.filled { animation-play-state: running; }
+
+    @keyframes cupBob {
+      0%, 100% { translate: -50% 0; }
+      50% { translate: -50% -6px; }
+    }
+
+    .live-cup.size-small { width: 100px; height: 125px; }
+    .live-cup.size-medium { width: 130px; height: 162px; }
+    .live-cup.size-large { width: 152px; height: 190px; }
+
+    .live-cup-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      display: block;
+      filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.4));
+    }
+
+    .cup-liquid {
+      transition: y 0.75s var(--ease-out), height 0.75s var(--ease-out), fill 0.5s ease;
+    }
+
+    @supports not (transition: y 1s) {
+      .cup-liquid { transition: fill 0.5s ease; }
+    }
+
+    .live-cup.glowing .cup-liquid {
+      filter: drop-shadow(0 -6px 14px rgba(224, 149, 64, 0.35));
+    }
+
+    .cup-liquid-fx {
+      position: absolute;
+      left: 26%;
+      right: 26%;
+      bottom: 8%;
+      height: 0%;
+      pointer-events: none;
+      border-radius: 0 0 40% 40%;
+      transition: height 0.75s var(--ease-out);
+      background: linear-gradient(180deg, rgba(250, 240, 225, 0.45), transparent 55%);
+      opacity: 0;
+    }
+
+    .live-cup.has-milk .cup-liquid-fx {
+      opacity: 1;
+      animation: milkSwirl 3.5s ease-in-out infinite;
+    }
+
+    @keyframes milkSwirl {
+      0%, 100% { transform: translateX(-4%) skewX(-2deg); opacity: 0.55; }
+      50% { transform: translateX(4%) skewX(2deg); opacity: 0.9; }
+    }
+
+    .order-summary-text {
+      font-size: 0.92rem;
+      color: var(--mist);
+      line-height: 1.55;
+      min-height: 3.2em;
+      transition: opacity 0.3s ease;
+    }
+
+    .order-summary-text strong {
+      display: block;
+      color: var(--foam);
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.01em;
+    }
+
+    .cup-price {
+      margin-top: 1rem;
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      color: var(--ember);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s var(--ease-out);
+      text-shadow: 0 0 24px rgba(216, 255, 58, 0.3);
+    }
+
+    .cup-price.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Order bar */
+    .order-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      padding: 1.1rem 1.25rem calc(1.1rem + env(safe-area-inset-bottom));
+      background: linear-gradient(180deg, transparent, rgba(8, 7, 6, 0.95) 35%);
+      display: none;
+      justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .order-bar.visible {
+      display: flex;
+      animation: riseIn 0.55s var(--ease-out);
+    }
+
+    .order-btn {
+      width: min(100%, 500px);
+      padding: 1.2rem 2rem;
+      background: var(--foam);
+      color: var(--ink);
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.01em;
+      border-radius: 999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      position: relative;
+      overflow: hidden;
+      transition:
+        transform 0.4s var(--ease-spring),
+        background 0.35s ease,
+        opacity 0.35s ease,
+        box-shadow 0.35s ease;
+    }
+
+    .order-btn:disabled {
+      opacity: 0.3;
+      cursor: none;
+    }
+
+    .order-btn:not(:disabled) {
+      box-shadow: 0 0 0 0 rgba(216, 255, 58, 0.4);
+    }
+
+    .order-btn:not(:disabled):hover {
+      transform: scale(1.035);
+      background: var(--ember);
+      box-shadow: 0 0 40px 6px rgba(216, 255, 58, 0.35);
+    }
+
+    .order-btn:not(:disabled):active { transform: scale(0.97); }
+
+    .order-btn .btn-price {
+      font-size: 0.9rem;
+      opacity: 0.55;
+      font-weight: 700;
+      transition: opacity 0.3s ease;
+    }
+
+    .order-btn:not(:disabled) .btn-price { opacity: 0.7; }
+
+    .order-btn .pulse-ring {
+      position: absolute;
+      inset: -2px;
+      border-radius: 999px;
+      border: 2px solid var(--ember);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .order-btn:not(:disabled) .pulse-ring {
+      animation: btnPulse 2.2s ease-out infinite;
+    }
+
+    @keyframes btnPulse {
+      0% { transform: scale(1); opacity: 0.7; }
+      100% { transform: scale(1.1); opacity: 0; }
+    }
+
+    /* Pour overlay */
+    .pour-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: var(--ink);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .pour-overlay.active {
+      display: flex;
+      animation: pourIn 0.35s ease;
+    }
+
+    @keyframes pourIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .pour-glow {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(224, 149, 64, 0.3), transparent 70%);
+      filter: blur(40px);
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+
+    .pour-overlay.pouring .pour-glow { opacity: 1; }
+
+    .pour-stream {
+      width: 10px;
+      height: 0;
+      background: linear-gradient(180deg, var(--copper), var(--liquid-colombian));
+      border-radius: 8px;
+      margin-bottom: -2px;
+      transition: height 0.7s var(--ease-out);
+      box-shadow: 0 0 20px rgba(224, 149, 64, 0.5);
+      position: relative;
+      z-index: 1;
+    }
+
+    .pour-overlay.pouring .pour-stream { height: 140px; }
+
+    .pour-cup {
+      width: 120px;
+      height: 148px;
+      position: relative;
+      z-index: 1;
+      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
+    }
+
+    .pour-cup-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+      display: block;
+    }
+
+    .pour-fill {
+      transition: y 1.3s var(--ease-out) 0.35s, height 1.3s var(--ease-out) 0.35s, fill 0.4s ease;
+    }
+
+    .pour-splash {
+      position: absolute;
+      bottom: 42%;
+      left: 50%;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--copper);
+      opacity: 0;
+      z-index: 2;
+    }
+
+    .pour-overlay.pouring .pour-splash {
+      animation: splash 0.8s var(--ease-out) 0.9s;
+    }
+
+    .pour-splash:nth-child(2) { animation-delay: 1s !important; --sx: -18px; --sy: -30px; }
+    .pour-splash:nth-child(3) { animation-delay: 1.05s !important; --sx: 20px; --sy: -24px; }
+    .pour-splash:nth-child(4) { animation-delay: 1.1s !important; --sx: -8px; --sy: -40px; }
+
+    @keyframes splash {
+      0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+      100% { opacity: 0; transform: translate(calc(-50% + var(--sx, 0px)), var(--sy, -28px)) scale(0.3); }
+    }
+
+    .pour-text {
+      margin-top: 2.25rem;
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: 0.06em;
+      opacity: 0;
+      transition: opacity 0.45s ease 0.5s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pour-overlay.pouring .pour-text { opacity: 1; }
+
+    /* Rating & Success */
+    .rating-stage,
+    .success-stage {
+      display: none;
+      position: relative;
+      z-index: 1;
+      min-height: 100svh;
+      padding: clamp(2rem, 5vw, 4.5rem) clamp(1.25rem, 3vw, 2.5rem);
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .rating-stage.active {
+      display: block;
+      animation: stageEnter 0.75s var(--ease-out);
+    }
+
+    .success-stage.active {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      animation: stageEnter 0.75s var(--ease-out);
+    }
+
+    .rating-stage h2,
+    .success-stage h2 {
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: clamp(2.2rem, 5.5vw, 3.2rem);
+      letter-spacing: -0.035em;
+      line-height: 1.05;
+      margin-bottom: 0.6rem;
+    }
+
+    .rating-sub {
+      color: var(--mist);
+      margin-bottom: 2.75rem;
+      font-size: 1.08rem;
+      line-height: 1.5;
+    }
+
+    .rating-group { margin-bottom: 2.5rem; }
+
+    .rating-group h3 {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      margin-bottom: 1.1rem;
+      letter-spacing: -0.01em;
+    }
+
+    .stars { display: flex; gap: 0.4rem; }
+
+    .star {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      position: relative;
+      transition: transform 0.35s var(--ease-spring);
+    }
+
+    .star svg {
+      width: 38px;
+      height: 38px;
+      fill: transparent;
+      stroke: var(--bark);
+      stroke-width: 1.5;
+      transition: fill 0.25s ease, stroke 0.25s ease, filter 0.25s ease;
+    }
+
+    .star:hover { transform: scale(1.2) rotate(-8deg); }
+
+    .star.filled svg,
+    .star.preview svg {
+      fill: var(--ember);
+      stroke: var(--ember);
+      filter: drop-shadow(0 0 10px rgba(216, 255, 58, 0.55));
+    }
+
+    .star.filled { animation: starBurst 0.5s var(--ease-spring); }
+
+    .star .sparkle {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: var(--ember);
+      border-radius: 50%;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 0 6px var(--ember);
+    }
+
+    .star.filled .sparkle {
+      animation: starSparkle 0.55s var(--ease-out) forwards;
+    }
+
+    .star .sparkle:nth-child(1) { --sx: 18px; --sy: -20px; }
+    .star .sparkle:nth-child(2) { --sx: -16px; --sy: -18px; animation-delay: 0.05s; }
+    .star .sparkle:nth-child(3) { --sx: 22px; --sy: 8px; animation-delay: 0.08s; }
+    .star .sparkle:nth-child(4) { --sx: -20px; --sy: 12px; animation-delay: 0.1s; }
+
+    @keyframes starSparkle {
+      0% { opacity: 1; transform: translate(0, 0) scale(1); }
+      100% { opacity: 0; transform: translate(var(--sx, 16px), var(--sy, -18px)) scale(0); }
+    }
+
+    @keyframes starBurst {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.4) rotate(10deg); }
+      100% { transform: scale(1); }
+    }
+
+    .tip-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.55rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .tip-btn {
+      padding: 1rem 0.5rem;
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      border: 1px solid var(--bark);
+      transition: all 0.35s var(--ease-spring);
+    }
+
+    .tip-btn:hover {
+      border-color: rgba(216, 255, 58, 0.45);
+      transform: translateY(-3px);
+    }
+
+    .tip-btn.selected {
+      background: var(--ember);
+      border-color: var(--ember);
+      color: var(--ink);
+      box-shadow: 0 0 24px rgba(216, 255, 58, 0.3);
+    }
+
+    .custom-tip-wrap {
+      display: none;
+      margin-bottom: 0.85rem;
+    }
+
+    .custom-tip-wrap.show {
+      display: block;
+      animation: riseIn 0.35s var(--ease-out);
+    }
+
+    .custom-tip-wrap input {
+      width: 100%;
+      padding: 1rem 1.1rem;
+      background: var(--roast);
+      border: 1px solid var(--bark);
+      color: var(--foam);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .custom-tip-wrap input:focus {
+      border-color: var(--ember);
+      box-shadow: 0 0 0 3px rgba(216, 255, 58, 0.15);
+    }
+
+    .tip-display {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      color: var(--ember);
+      min-height: 1.5em;
+      margin-bottom: 1.75rem;
+      text-shadow: 0 0 16px rgba(216, 255, 58, 0.3);
+    }
+
+    .submit-rating {
+      width: 100%;
+      padding: 1.2rem;
+      background: var(--ember);
+      color: var(--ink);
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: 1.08rem;
+      border-radius: 999px;
+      transition: transform 0.4s var(--ease-spring), box-shadow 0.35s ease;
+      box-shadow: 0 8px 32px rgba(216, 255, 58, 0.2);
+    }
+
+    .submit-rating:hover {
+      transform: scale(1.025);
+      box-shadow: 0 0 48px rgba(216, 255, 58, 0.4);
+    }
+
+    .submit-rating:active { transform: scale(0.97); }
+
+    .rating-error {
+      color: #ff7a7a;
+      font-size: 0.9rem;
+      margin-top: 0.85rem;
+      min-height: 1.3em;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .rating-error.show { opacity: 1; }
+
+    /* Success */
+    .success-burst {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      margin-bottom: 1.75rem;
+    }
+
+    .success-burst .ring {
+      position: absolute;
+      inset: 0;
+      border: 2px solid var(--ember);
+      border-radius: 50%;
+      animation: successRing 0.9s var(--ease-out) forwards;
+    }
+
+    .success-burst .ring2 {
+      position: absolute;
+      inset: -12px;
+      border: 1px solid rgba(216, 255, 58, 0.4);
+      border-radius: 50%;
+      animation: successRing 1.1s var(--ease-out) 0.1s forwards;
+    }
+
+    .success-burst .check {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      background: var(--ember);
+      border-radius: 50%;
+      transform: scale(0);
+      animation: successCheck 0.55s var(--ease-spring) 0.2s forwards;
+      box-shadow: 0 0 40px rgba(216, 255, 58, 0.5);
+    }
+
+    .success-burst .check svg {
+      width: 42px;
+      height: 42px;
+      stroke: var(--ink);
+      fill: none;
+      stroke-width: 3;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .confetti {
+      position: absolute;
+      inset: -60px;
+      pointer-events: none;
+      overflow: visible;
+    }
+
+    .confetti i {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: 6px;
+      height: 6px;
+      background: var(--ember);
+      border-radius: 1px;
+      opacity: 0;
+      animation: confettiBurst 1s var(--ease-out) forwards;
+    }
+
+    .confetti i:nth-child(odd) { background: var(--copper); border-radius: 50%; width: 5px; height: 5px; }
+    .confetti i:nth-child(3n) { background: var(--foam); width: 4px; height: 8px; }
+
+    @keyframes confettiBurst {
+      0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
+      100% { opacity: 0; transform: translate(var(--cx), var(--cy)) rotate(var(--cr)) scale(0.3); }
+    }
+
+    @keyframes successRing {
+      from { transform: scale(0.4); opacity: 0; }
+      40% { opacity: 1; }
+      to { transform: scale(1.7); opacity: 0; }
+    }
+
+    @keyframes successCheck { to { transform: scale(1); } }
+
+    .order-details {
+      color: var(--mist);
+      font-size: 1rem;
+      line-height: 1.75;
+      margin-bottom: 2.25rem;
+      text-align: left;
+      width: 100%;
+      padding: 1.75rem 0;
+      border-top: 1px solid var(--bark);
+      border-bottom: 1px solid var(--bark);
+    }
+
+    .order-details p {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.45rem;
+    }
+
+    .order-details .label { color: var(--mist); }
+
+    .order-details .value {
+      color: var(--foam);
+      font-family: "Syne", sans-serif;
+      font-weight: 600;
+      text-align: right;
+    }
+
+    .order-details .total .value {
+      color: var(--ember);
+      font-size: 1.2rem;
+      text-shadow: 0 0 20px rgba(216, 255, 58, 0.3);
+    }
+
+    /* Barista handoff */
+    .handoff {
+      width: 100%;
+      margin-bottom: 2.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.1rem;
+    }
+
+    .handoff-title {
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      letter-spacing: -0.01em;
+    }
+
+    .qr-card {
+      background: #fff;
+      padding: 14px;
+      border-radius: 8px;
+      line-height: 0;
+      box-shadow: 0 0 40px rgba(216, 255, 58, 0.12), 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+
+    .qr-card svg {
+      width: 190px;
+      height: 190px;
+      display: block;
+    }
+
+    .share-btn {
+      padding: 1.05rem 2.25rem;
+      background: var(--ember);
+      color: var(--ink);
+      font-family: "Syne", sans-serif;
+      font-weight: 800;
+      font-size: 1rem;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      transition: transform 0.4s var(--ease-spring), box-shadow 0.35s ease;
+      box-shadow: 0 8px 32px rgba(216, 255, 58, 0.2);
+    }
+
+    .share-btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 40px rgba(216, 255, 58, 0.4);
+    }
+
+    .share-btn:active { transform: scale(0.96); }
+
+    .handoff-hint {
+      font-size: 0.88rem;
+      color: var(--mist);
+      max-width: 34ch;
+      line-height: 1.5;
+      word-break: break-word;
+    }
+
+    .new-order-btn {
+      padding: 1.05rem 2.25rem;
+      border: 1.5px solid var(--foam);
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      border-radius: 999px;
+      transition: all 0.4s var(--ease-spring);
+    }
+
+    .new-order-btn:hover {
+      background: var(--foam);
+      color: var(--ink);
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(240, 235, 227, 0.2);
+    }
+
+    /* Mobile strip */
+    .mobile-cup-strip {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.1rem;
+      margin-bottom: 1.75rem;
+      border: 1px solid rgba(240, 235, 227, 0.06);
+      background: linear-gradient(135deg, rgba(36, 28, 22, 0.8), rgba(16, 13, 11, 0.6));
+      backdrop-filter: blur(12px);
+    }
+
+    @media (min-width: 900px) {
+      .mobile-cup-strip { display: none; }
+    }
+
+    .mobile-cup-mini {
+      width: 48px;
+      height: 58px;
+      border: 2px solid rgba(240, 235, 227, 0.28);
+      border-radius: 3px 3px 12px 12px;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .mobile-cup-mini .fill {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 0%;
+      background: var(--liquid-colombian);
+      transition: height 0.55s var(--ease-out), background 0.4s ease;
+    }
+
+    .mobile-cup-status {
+      font-size: 0.85rem;
+      color: var(--mist);
+      line-height: 1.4;
+    }
+
+    .mobile-cup-status strong {
+      display: block;
+      color: var(--foam);
+      font-family: "Syne", sans-serif;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin-bottom: 0.15rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero-content {
+        max-width: calc(100vw - 2.5rem);
+      }
+
+      .brand {
+        font-size: clamp(2.35rem, 8.5vw, 3.75rem);
+      }
+
+      .hero-cup {
+        width: min(36vw, 240px);
+        opacity: 0.45;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero-cup {
+        opacity: 0.22;
+        width: min(46vw, 180px);
+        right: -6%;
+        -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 35%, black 100%);
+        mask-image: linear-gradient(90deg, transparent 0%, black 35%, black 100%);
+      }
+
+      .hero-content {
+        max-width: 100%;
+      }
+
+      .brand {
+        font-size: clamp(2.25rem, 10.5vw, 3.25rem);
+      }
+
+      .tip-row { grid-template-columns: repeat(2, 1fr); }
+
+      .star { width: 44px; height: 44px; }
+      .star svg { width: 32px; height: 32px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      body { cursor: auto; }
+      .cursor, .cursor-dot { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"></div>
+  <div class="cursor" id="cursor" aria-hidden="true"></div>
+  <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid" aria-hidden="true"></div>
+    <div class="steam-field" aria-hidden="true">
+      <div class="steam-wisp"></div>
+      <div class="steam-wisp"></div>
+      <div class="steam-wisp"></div>
+      <div class="steam-wisp"></div>
+      <div class="steam-wisp"></div>
+      <div class="steam-wisp"></div>
+    </div>
+    <div class="sparks" aria-hidden="true">
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+      <div class="spark"></div>
+    </div>
+    <div class="hero-cup" id="heroCup" aria-hidden="true">
+      <div class="hero-cup-parallax" id="heroCupParallax">
+      <svg viewBox="0 0 320 400" fill="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision">
+        <defs>
+          <linearGradient id="cupBody" x1="70" y1="70" x2="230" y2="340" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#5a3824"/>
+            <stop offset="45%" stop-color="#2a1810"/>
+            <stop offset="100%" stop-color="#120a08"/>
+          </linearGradient>
+          <linearGradient id="cupInner" x1="100" y1="90" x2="200" y2="300" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#1a100c"/>
+            <stop offset="100%" stop-color="#0a0604"/>
+          </linearGradient>
+          <linearGradient id="liquidGrad" x1="160" y1="140" x2="160" y2="310" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#6b4228"/>
+            <stop offset="40%" stop-color="#3d2314"/>
+            <stop offset="100%" stop-color="#24140c"/>
+          </linearGradient>
+          <linearGradient id="foamTop" x1="160" y1="128" x2="160" y2="168" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f2ebe2" stop-opacity="0.92"/>
+            <stop offset="100%" stop-color="#f2ebe2" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="glassShine" x1="90" y1="100" x2="140" y2="280" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#fff" stop-opacity="0.28"/>
+            <stop offset="55%" stop-color="#fff" stop-opacity="0.06"/>
+            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
+          </linearGradient>
+          <radialGradient id="cupShadow" cx="0.5" cy="0.5" r="0.5">
+            <stop offset="0%" stop-color="#000" stop-opacity="0.5"/>
+            <stop offset="100%" stop-color="#000" stop-opacity="0"/>
+          </radialGradient>
+          <clipPath id="cupInnerClip">
+            <path d="M92 96
+              C92 96 96 300 100 318
+              C108 340 148 352 160 352
+              C172 352 212 340 220 318
+              C224 300 228 96 228 96
+              Z"/>
+          </clipPath>
+          <filter id="steamBlur" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="1.2"/>
+          </filter>
+        </defs>
+
+        <!-- Ground shadow -->
+        <ellipse cx="155" cy="372" rx="88" ry="14" fill="url(#cupShadow)"/>
+
+        <!-- Steam -->
+        <g fill="none" stroke="rgba(240,235,227,0.4)" stroke-width="2.25" stroke-linecap="round" filter="url(#steamBlur)">
+          <path class="steam-path" d="M118 78 C114 58 128 48 122 28"/>
+          <path class="steam-path" d="M158 72 C162 52 148 42 156 22"/>
+          <path class="steam-path" d="M196 80 C200 60 186 50 192 30"/>
+        </g>
+
+        <!-- Outer cup body -->
+        <path d="M78 88
+          C78 88 84 308 90 328
+          C100 354 140 368 160 368
+          C180 368 220 354 230 328
+          C236 308 242 88 242 88
+          Z"
+          fill="url(#cupBody)"
+          stroke="rgba(240,235,227,0.22)"
+          stroke-width="2"/>
+
+        <!-- Inner wall -->
+        <path d="M92 96
+          C92 96 96 300 100 318
+          C108 340 148 352 160 352
+          C172 352 212 340 220 318
+          C224 300 228 96 228 96
+          Z"
+          fill="url(#cupInner)"/>
+
+        <!-- Liquid -->
+        <g clip-path="url(#cupInnerClip)">
+          <rect x="88" y="148" width="144" height="220" fill="url(#liquidGrad)"/>
+          <path class="wave-a" d="M70 152
+            C95 138 120 166 145 152
+            C170 138 195 166 220 150
+            C245 136 270 158 280 148
+            L280 180 L70 180 Z"
+            fill="#5a3420" opacity="0.85"/>
+          <path class="wave-b" d="M70 158
+            C100 172 125 144 155 158
+            C185 172 210 146 240 160
+            C260 168 275 152 280 156
+            L280 190 L70 190 Z"
+            fill="#4a2a18" opacity="0.55"/>
+          <ellipse cx="160" cy="152" rx="68" ry="14" fill="url(#foamTop)"/>
+        </g>
+
+        <!-- Rim (ellipse ring) -->
+        <ellipse cx="160" cy="88" rx="86" ry="22"
+          fill="none"
+          stroke="rgba(240,235,227,0.38)"
+          stroke-width="2.5"/>
+        <ellipse cx="160" cy="88" rx="72" ry="16"
+          fill="rgba(10,6,4,0.35)"
+          stroke="rgba(240,235,227,0.12)"
+          stroke-width="1.5"/>
+
+        <!-- Handle (double-stroke for thickness) -->
+        <path d="M242 118
+          C278 124 292 148 292 178
+          C292 214 274 240 242 248"
+          fill="none"
+          stroke="rgba(240,235,227,0.28)"
+          stroke-width="14"
+          stroke-linecap="round"/>
+        <path d="M242 118
+          C278 124 292 148 292 178
+          C292 214 274 240 242 248"
+          fill="none"
+          stroke="#1a100c"
+          stroke-width="8"
+          stroke-linecap="round"/>
+        <path d="M242 118
+          C278 124 292 148 292 178
+          C292 214 274 240 242 248"
+          fill="none"
+          stroke="rgba(240,235,227,0.18)"
+          stroke-width="2"
+          stroke-linecap="round"/>
+
+        <!-- Specular highlight -->
+        <path d="M104 118
+          C108 180 110 240 116 300"
+          stroke="url(#glassShine)"
+          stroke-width="10"
+          stroke-linecap="round"
+          opacity="0.7"/>
+
+        <!-- Accent swirl -->
+        <path d="M112 220
+          C132 198 152 236 172 214
+          C188 198 204 228 222 208"
+          stroke="rgba(216,255,58,0.45)"
+          stroke-width="2"
+          stroke-linecap="round"
+          fill="none"/>
+      </svg>
+      </div>
+    </div>
+    <div class="hero-content">
+      <h1 class="brand">
+        <span class="line"><span class="word">Elemental</span></span>
+        <span class="line"><span class="word accent-word">Brew</span></span>
+      </h1>
+      <p class="hero-tagline">A perfect cup, built your way. Hot, iced, or just water — brewed from the elements.</p>
+      <button class="cta-start" id="startBtn" type="button">
+        Start your brew
+        <svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+    </div>
+    <p class="scroll-hint">Four elements. One cup.</p>
+  </section>
+
+  <!-- ORDER -->
+  <section class="order-stage" id="orderStage">
+    <div class="order-flow">
+      <div class="stage-header">
+        <p class="stage-eyebrow">Build your cup</p>
+        <h2>What are we pouring?</h2>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+
+      <div class="mobile-cup-strip" aria-live="polite">
+        <div class="mobile-cup-mini"><div class="fill" id="mobileFill"></div></div>
+        <div class="mobile-cup-status" id="mobileStatus">
+          <strong>Empty cup</strong>
+          Pick a coffee to begin
+        </div>
+      </div>
+
+      <div class="step visible" id="stepName">
+        <div class="step-label">
+          <span class="step-num">01</span>
+          <span class="step-title">Who's this for?</span>
+        </div>
+        <div class="name-wrap">
+          <input type="text" id="customerName" placeholder="Your name" maxlength="40" autocomplete="off">
+        </div>
+      </div>
+
+      <div class="step visible" id="stepCoffee">
+        <div class="step-label">
+          <span class="step-num">02</span>
+          <span class="step-title">Choose your brew</span>
+        </div>
+        <div class="coffee-grid">
+          <div class="coffee-option" data-coffee="colombian" role="button" tabindex="0">
+            <div class="coffee-swatch" aria-hidden="true"></div>
+            <div class="coffee-info">
+              <div class="coffee-name">Starbucks Colombian</div>
+              <div class="coffee-desc">Medium roast with a balanced, nutty flavor</div>
+            </div>
+            <div class="coffee-check" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="coffee-option" data-coffee="breakfast" role="button" tabindex="0">
+            <div class="coffee-swatch" aria-hidden="true"></div>
+            <div class="coffee-info">
+              <div class="coffee-name">Breakfast Blend Light Roast</div>
+              <div class="coffee-desc">Light, bright, and citrusy morning blend</div>
+            </div>
+            <div class="coffee-check" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="coffee-option" data-coffee="decaf" role="button" tabindex="0">
+            <div class="coffee-swatch" aria-hidden="true"></div>
+            <div class="coffee-info">
+              <div class="coffee-name">Nescafe Taster's Choice Decaf</div>
+              <div class="coffee-desc">Smooth instant decaf coffee</div>
+            </div>
+            <div class="coffee-check" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+          <div class="coffee-option" data-coffee="water" role="button" tabindex="0">
+            <div class="coffee-swatch" aria-hidden="true"></div>
+            <div class="coffee-info">
+              <div class="coffee-name">Fresh Water</div>
+              <div class="coffee-desc">Complimentary filtered water</div>
+            </div>
+            <div class="coffee-check" aria-hidden="true">
+              <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step" id="stepTemp" hidden>
+        <div class="step-label">
+          <span class="step-num">03</span>
+          <span class="step-title">Hot or iced?</span>
+        </div>
+        <div class="choice-row">
+          <div class="choice temperature-choice" data-temperature="hot" role="button" tabindex="0">
+            <div class="choice-name"><span class="choice-icon" aria-hidden="true">♨</span> Hot</div>
+            <div class="choice-meta">Classic hot brew</div>
+          </div>
+          <div class="choice temperature-choice" data-temperature="iced" role="button" tabindex="0">
+            <div class="choice-name"><span class="choice-icon" aria-hidden="true">❄</span> Iced</div>
+            <div class="choice-meta">Refreshing cold brew</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step" id="stepMilk" hidden>
+        <div class="step-label">
+          <span class="step-num">04</span>
+          <span class="step-title">Milk or cream?</span>
+        </div>
+        <div class="choice-row">
+          <div class="choice milk-choice" data-milk="none" role="button" tabindex="0">
+            <div class="choice-name">Black</div>
+            <div class="choice-meta">No milk or cream</div>
+          </div>
+          <div class="choice milk-choice" data-milk="milk" role="button" tabindex="0">
+            <div class="choice-name">Milk</div>
+            <div class="choice-meta">Add regular milk</div>
+          </div>
+          <div class="choice milk-choice" data-milk="half-half" role="button" tabindex="0">
+            <div class="choice-name">Half &amp; Half</div>
+            <div class="choice-meta">Rich &amp; creamy</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="step" id="stepSize">
+        <div class="step-label">
+          <span class="step-num" id="sizeStepNum">03</span>
+          <span class="step-title">Pick your size</span>
+        </div>
+        <div class="choice-row size-row">
+          <div class="choice size-choice" data-size="small" role="button" tabindex="0">
+            <div class="choice-name">
+              <span class="cup-glyph small" aria-hidden="true">
+                <svg viewBox="0 0 40 48" fill="none"><path d="M10 10c0 0 1.2 26 2 30 1.2 5.5 6.5 7.5 8 7.5s6.8-2 8-7.5c.8-4 2-30 2-30" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><ellipse cx="20" cy="10" rx="12" ry="3.5" stroke="currentColor" stroke-width="2"/><path d="M30 16c5 .8 7 4 7 8s-2.2 7.5-7 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+              Small
+            </div>
+            <div class="choice-meta">Dzien Dobry Cup</div>
+          </div>
+          <div class="choice size-choice" data-size="medium" role="button" tabindex="0">
+            <div class="choice-name">
+              <span class="cup-glyph medium" aria-hidden="true">
+                <svg viewBox="0 0 40 48" fill="none"><path d="M9 9c0 0 1.4 28 2.2 32 1.4 6 7 8.5 8.8 8.5s7.4-2.5 8.8-8.5c.8-4 2.2-32 2.2-32" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><ellipse cx="20" cy="9" rx="13" ry="3.8" stroke="currentColor" stroke-width="2"/><path d="M31 15c5.5 1 8 4.5 8 9s-2.5 8.5-8 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+              Medium
+            </div>
+            <div class="choice-meta">Blue Cup</div>
+          </div>
+          <div class="choice size-choice" data-size="large" role="button" tabindex="0">
+            <div class="choice-name">
+              <span class="cup-glyph large" aria-hidden="true">
+                <svg viewBox="0 0 40 48" fill="none"><path d="M8 8c0 0 1.5 30 2.5 34 1.5 6.5 7.5 9 9.5 9s8-2.5 9.5-9c1-4 2.5-34 2.5-34" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><ellipse cx="20" cy="8" rx="14" ry="4" stroke="currentColor" stroke-width="2"/><path d="M32 14c6 1 9 5 9 10.5s-3 9.5-9 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              </span>
+              Large
+            </div>
+            <div class="choice-meta">Starbucks Travel Cup</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="cup-preview" aria-live="polite">
+      <p class="cup-preview-label">Your cup</p>
+      <div class="cup-stage">
+        <div class="cup-ring" aria-hidden="true">
+          <svg viewBox="0 0 220 220">
+            <circle class="track" cx="110" cy="110" r="100"/>
+            <circle class="fill" id="cupRingFill" cx="110" cy="110" r="100"/>
+          </svg>
+        </div>
+        <div class="cup-steam" id="cupSteam" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="cup-ice" id="cupIce" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div class="live-cup" id="liveCup">
+          <svg class="live-cup-svg" viewBox="0 0 160 200" fill="none" aria-hidden="true">
+            <defs>
+              <linearGradient id="liveBodyGrad" x1="40" y1="30" x2="120" y2="180" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="rgba(240,235,227,0.14)"/>
+                <stop offset="100%" stop-color="rgba(240,235,227,0.04)"/>
+              </linearGradient>
+              <clipPath id="liveLiquidClip">
+                <path d="M42 42 C42 42 45 155 48 168 C52 182 70 188 80 188 C90 188 108 182 112 168 C115 155 118 42 118 42 Z"/>
+              </clipPath>
+            </defs>
+            <!-- Cup shell -->
+            <path d="M36 38 C36 38 40 162 44 176 C50 192 68 198 80 198 C92 198 110 192 116 176 C120 162 124 38 124 38 Z"
+              fill="url(#liveBodyGrad)"
+              stroke="rgba(240,235,227,0.38)"
+              stroke-width="2.25"/>
+            <!-- Liquid (animated via CSS height on foreign-like rect using clip) -->
+            <g clip-path="url(#liveLiquidClip)">
+              <rect class="cup-liquid" id="cupLiquid" x="40" y="200" width="80" height="0" fill="var(--liquid-colombian)">
+              </rect>
+            </g>
+            <!-- Foam waves drawn as CSS-independent overlays via second rects? keep CSS waves as absolute HTML -->
+            <!-- Rim -->
+            <ellipse cx="80" cy="38" rx="46" ry="12" fill="rgba(10,8,6,0.35)" stroke="rgba(240,235,227,0.4)" stroke-width="2.25"/>
+            <ellipse cx="80" cy="38" rx="38" ry="8" fill="none" stroke="rgba(240,235,227,0.12)" stroke-width="1.25"/>
+            <!-- Handle -->
+            <path d="M124 58 C148 62 158 78 158 96 C158 118 146 134 124 138"
+              fill="none" stroke="rgba(240,235,227,0.32)" stroke-width="7" stroke-linecap="round"/>
+            <path d="M124 58 C148 62 158 78 158 96 C158 118 146 134 124 138"
+              fill="none" stroke="rgba(8,7,6,0.85)" stroke-width="3.5" stroke-linecap="round"/>
+            <!-- Shine -->
+            <path d="M52 55 C54 95 55 135 58 170" stroke="rgba(255,255,255,0.18)" stroke-width="5" stroke-linecap="round"/>
+          </svg>
+          <div class="cup-liquid-fx" id="cupLiquidFx" aria-hidden="true"></div>
+        </div>
+      </div>
+      <p class="order-summary-text" id="cupSummary">Waiting for your picks…</p>
+      <p class="cup-price" id="cupPrice"></p>
+    </aside>
+  </section>
+
+  <div class="order-bar" id="orderBar">
+    <button class="order-btn" id="orderButton" type="button" disabled>
+      <span class="pulse-ring" aria-hidden="true"></span>
+      <span id="orderBtnLabel">Place order</span>
+      <span class="btn-price" id="orderBtnPrice"></span>
+    </button>
+  </div>
+
+  <div class="pour-overlay" id="pourOverlay" aria-hidden="true">
+    <div class="pour-glow" aria-hidden="true"></div>
+    <div class="pour-stream" id="pourStream"></div>
+    <div class="pour-cup">
+      <svg class="pour-cup-svg" viewBox="0 0 120 150" fill="none" aria-hidden="true">
+        <defs>
+          <clipPath id="pourClip">
+            <path d="M28 28 C28 28 31 118 34 128 C38 140 52 145 60 145 C68 145 82 140 86 128 C89 118 92 28 92 28 Z"/>
+          </clipPath>
+        </defs>
+        <path d="M24 26 C24 26 28 124 32 134 C38 148 52 152 60 152 C68 152 82 148 88 134 C92 124 96 26 96 26 Z"
+          fill="rgba(20,16,12,0.55)" stroke="rgba(240,235,227,0.4)" stroke-width="2"/>
+        <g clip-path="url(#pourClip)">
+          <rect class="pour-fill" id="pourFill" x="26" y="145" width="68" height="0" fill="#3a2012"/>
+        </g>
+        <ellipse cx="60" cy="26" rx="38" ry="10" fill="rgba(10,8,6,0.4)" stroke="rgba(240,235,227,0.4)" stroke-width="2"/>
+        <path d="M96 42 C112 46 118 58 118 72 C118 88 110 100 96 104"
+          fill="none" stroke="rgba(240,235,227,0.3)" stroke-width="5.5" stroke-linecap="round"/>
+      </svg>
+      <div class="pour-splash" style="--sx:-16px;--sy:-28px"></div>
+      <div class="pour-splash"></div>
+      <div class="pour-splash"></div>
+      <div class="pour-splash"></div>
+    </div>
+    <p class="pour-text">Pouring your brew…</p>
+  </div>
+
+  <section class="rating-stage" id="ratingStage">
+    <p class="stage-eyebrow">Almost done</p>
+    <h2>How was your brew?</h2>
+    <p class="rating-sub">Rate your coffee and barista — then tip if you'd like.</p>
+
+    <div class="rating-group">
+      <h3>How was your coffee?</h3>
+      <div class="stars" id="coffeeRating" role="radiogroup" aria-label="Coffee rating"></div>
+    </div>
+
+    <div class="rating-group">
+      <h3>How was your barista?</h3>
+      <div class="stars" id="baristaRating" role="radiogroup" aria-label="Barista rating"></div>
+    </div>
+
+    <div class="rating-group">
+      <h3>Leave a tip</h3>
+      <div class="tip-row">
+        <button class="tip-btn" type="button" data-tip="15">15%</button>
+        <button class="tip-btn" type="button" data-tip="20">20%</button>
+        <button class="tip-btn" type="button" data-tip="25">25%</button>
+        <button class="tip-btn" type="button" data-tip="custom">Custom</button>
+      </div>
+      <div class="custom-tip-wrap" id="customTipInput">
+        <input type="number" id="customTipAmount" placeholder="Tip amount ($)" min="0" step="0.01" inputmode="decimal">
+      </div>
+      <div class="tip-display" id="tipDisplay"></div>
+    </div>
+
+    <button class="submit-rating" id="submitRating" type="button">Submit rating</button>
+    <p class="rating-error" id="ratingError" role="alert"></p>
+  </section>
+
+  <section class="success-stage" id="successStage">
+    <div class="success-burst" aria-hidden="true">
+      <div class="confetti" id="confetti"></div>
+      <div class="ring"></div>
+      <div class="ring2"></div>
+      <div class="check">
+        <svg viewBox="0 0 40 40"><path d="M10 20l7 7 13-14"/></svg>
+      </div>
+    </div>
+    <h2>You're all set</h2>
+    <p class="rating-sub">Thanks for stopping by — see you next pour.</p>
+    <div class="order-details" id="orderSummary"></div>
+    <div class="handoff">
+      <p class="handoff-title">Send it to the barista</p>
+      <div class="qr-card" id="qrCard" role="img" aria-label="QR code containing your order"></div>
+      <button class="share-btn" id="shareOrderBtn" type="button">
+        Send to barista
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <path d="M13 8v5a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8M8 10V2m0 0L5 5m3-3l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <p class="handoff-hint" id="handoffHint">Have the barista scan the code, or send them the link — the order lands in their queue.</p>
+    </div>
+    <button class="new-order-btn" id="newOrderButton" type="button">Place new order</button>
+  </section>
+
+  <script src="qrcode.min.js"></script>
+  <script>
+    const coffeeNames = {
+      colombian: "Starbucks Colombian",
+      breakfast: "Breakfast Blend Light Roast",
+      decaf: "Nescafe Taster's Choice Decaf",
+      water: "Fresh Water"
+    };
+
+    const liquidColors = {
+      colombian: "#3a2012",
+      breakfast: "#6e4324",
+      decaf: "#4c3828",
+      water: "#6eb0cc"
+    };
+
+    const prices = { small: 3.95, medium: 4.95, large: 5.95 };
+
+    let orderState = {
+      coffee: null, temperature: null, milk: null, size: null,
+      coffeeRating: 0, baristaRating: 0, tip: 0, tipPercentage: null
+    };
+
+    const hero = document.getElementById("hero");
+    const orderStage = document.getElementById("orderStage");
+    const ratingStage = document.getElementById("ratingStage");
+    const successStage = document.getElementById("successStage");
+    const orderBar = document.getElementById("orderBar");
+    const orderButton = document.getElementById("orderButton");
+    const pourOverlay = document.getElementById("pourOverlay");
+    const cupLiquid = document.getElementById("cupLiquid");
+    const cupLiquidFx = document.getElementById("cupLiquidFx");
+    const pourFill = document.getElementById("pourFill");
+    const liveCup = document.getElementById("liveCup");
+    const cupSteam = document.getElementById("cupSteam");
+    const cupIce = document.getElementById("cupIce");
+    const cupSummary = document.getElementById("cupSummary");
+    const cupPrice = document.getElementById("cupPrice");
+    const cupRingFill = document.getElementById("cupRingFill");
+    const progressFill = document.getElementById("progressFill");
+    const mobileFill = document.getElementById("mobileFill");
+    const mobileStatus = document.getElementById("mobileStatus");
+    const stepTemp = document.getElementById("stepTemp");
+    const stepMilk = document.getElementById("stepMilk");
+    const sizeStepNum = document.getElementById("sizeStepNum");
+    const orderBtnPrice = document.getElementById("orderBtnPrice");
+    const cursor = document.getElementById("cursor");
+    const cursorDot = document.getElementById("cursorDot");
+    const heroCup = document.getElementById("heroCup");
+    const heroCupParallax = document.getElementById("heroCupParallax");
+
+    // Custom cursor + spotlight
+    let mx = window.innerWidth / 2, my = window.innerHeight / 2;
+    let cx = mx, cy = my;
+
+    document.addEventListener("mousemove", e => {
+      mx = e.clientX;
+      my = e.clientY;
+      cursorDot.style.left = mx + "px";
+      cursorDot.style.top = my + "px";
+      document.documentElement.style.setProperty("--spot-x", (mx / window.innerWidth * 100) + "%");
+      document.documentElement.style.setProperty("--spot-y", (my / window.innerHeight * 100) + "%");
+
+      if (heroCupParallax && !hero.classList.contains("exiting") && hero.style.display !== "none") {
+        const dx = (mx / window.innerWidth - 0.5) * 16;
+        const dy = (my / window.innerHeight - 0.5) * 12;
+        heroCupParallax.style.transform = `translate(${dx}px, ${dy}px)`;
+      }
+    });
+
+    (function tickCursor() {
+      cx += (mx - cx) * 0.18;
+      cy += (my - cy) * 0.18;
+      cursor.style.left = cx + "px";
+      cursor.style.top = cy + "px";
+      requestAnimationFrame(tickCursor);
+    })();
+
+    document.querySelectorAll("button, [role='button'], .coffee-option, .choice, .tip-btn, .star, a").forEach(el => {
+      el.addEventListener("mouseenter", () => cursor.classList.add("hovering"));
+      el.addEventListener("mouseleave", () => cursor.classList.remove("hovering"));
+    });
+
+    // Build star buttons
+    function buildStars(containerId) {
+      const container = document.getElementById(containerId);
+      for (let i = 1; i <= 5; i++) {
+        const btn = document.createElement("button");
+        btn.className = "star";
+        btn.type = "button";
+        btn.dataset.rating = i;
+        btn.setAttribute("aria-label", i + (i === 1 ? " star" : " stars"));
+        btn.innerHTML = `
+          <span class="sparkle"></span><span class="sparkle"></span>
+          <span class="sparkle"></span><span class="sparkle"></span>
+          <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        `;
+        container.appendChild(btn);
+      }
+    }
+    buildStars("coffeeRating");
+    buildStars("baristaRating");
+
+    // Ripple on coffee options
+    function addRipple(el, e) {
+      const rect = el.getBoundingClientRect();
+      const ripple = document.createElement("span");
+      ripple.className = "ripple";
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + "px";
+      ripple.style.left = (e.clientX - rect.left - size / 2) + "px";
+      ripple.style.top = (e.clientY - rect.top - size / 2) + "px";
+      el.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 600);
+    }
+
+    // Start
+    document.getElementById("startBtn").addEventListener("click", () => {
+      hero.classList.add("exiting");
+      setTimeout(() => {
+        hero.style.display = "none";
+        hero.setAttribute("aria-hidden", "true");
+        orderStage.classList.add("active");
+        orderBar.classList.add("visible");
+        revealSteps();
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 550);
+    });
+
+    function revealSteps() {
+      document.querySelectorAll(".step").forEach((step, i) => {
+        if (step.hidden) return;
+        setTimeout(() => step.classList.add("visible"), 100 + i * 140);
+      });
+    }
+
+    function selectOne(selector, el) {
+      document.querySelectorAll(selector).forEach(n => n.classList.remove("selected"));
+      el.classList.add("selected");
+    }
+
+    function bindSelect(selector, onPick) {
+      document.querySelectorAll(selector).forEach(el => {
+        const activate = (e) => {
+          if (el.classList.contains("coffee-option") && e && e.clientX) addRipple(el, e);
+          onPick(el);
+        };
+        el.addEventListener("click", activate);
+        el.addEventListener("keydown", e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            activate();
+          }
+        });
+      });
+    }
+
+    function scrollToStep(el) {
+      setTimeout(() => {
+        el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }, 100);
+    }
+
+    bindSelect(".coffee-option", el => {
+      selectOne(".coffee-option", el);
+      orderState.coffee = el.dataset.coffee;
+
+      if (orderState.coffee === "water") {
+        stepTemp.hidden = true;
+        stepMilk.hidden = true;
+        stepTemp.classList.remove("visible");
+        stepMilk.classList.remove("visible");
+        orderState.temperature = "cold";
+        orderState.milk = "none";
+        sizeStepNum.textContent = "03";
+        document.querySelectorAll(".temperature-choice, .milk-choice").forEach(n => n.classList.remove("selected"));
+      } else {
+        stepTemp.hidden = false;
+        stepMilk.hidden = false;
+        sizeStepNum.textContent = "05";
+        requestAnimationFrame(() => {
+          stepTemp.classList.add("visible");
+          setTimeout(() => stepMilk.classList.add("visible"), 100);
+        });
+        document.querySelectorAll(".temperature-choice, .milk-choice").forEach(n => n.classList.remove("selected"));
+        orderState.temperature = null;
+        orderState.milk = null;
+        scrollToStep(stepTemp);
+      }
+
+      updateCup();
+      checkOrderReady();
+    });
+
+    bindSelect(".temperature-choice", el => {
+      selectOne(".temperature-choice", el);
+      orderState.temperature = el.dataset.temperature;
+      updateCup();
+      checkOrderReady();
+      scrollToStep(stepMilk);
+    });
+
+    bindSelect(".milk-choice", el => {
+      selectOne(".milk-choice", el);
+      orderState.milk = el.dataset.milk;
+      updateCup();
+      checkOrderReady();
+      scrollToStep(document.getElementById("stepSize"));
+    });
+
+    bindSelect(".size-choice", el => {
+      selectOne(".size-choice", el);
+      orderState.size = el.dataset.size;
+      updateCup();
+      checkOrderReady();
+    });
+
+    function getProgress() {
+      const isWater = orderState.coffee === "water";
+      let p = 0;
+      if (orderState.coffee) p += 25;
+      if (orderState.temperature || isWater) p += 25;
+      if (orderState.milk !== null || isWater) p += 25;
+      if (orderState.size) p += 25;
+      return p;
+    }
+
+    function setSvgFill(el, fillPct, bottomY, maxH, color) {
+      const h = (Math.max(0, Math.min(100, fillPct)) / 100) * maxH;
+      el.setAttribute("height", h);
+      el.setAttribute("y", bottomY - h);
+      el.style.fill = color;
+    }
+
+    function updateCup() {
+      const { coffee, temperature, milk, size } = orderState;
+      const isWater = coffee === "water";
+      const progress = getProgress();
+
+      let fill = 0;
+      if (coffee) fill += 28;
+      if (temperature || isWater) fill += 22;
+      if (milk !== null || isWater) fill += 22;
+      if (size) fill += 23;
+
+      const color = coffee ? liquidColors[coffee] : liquidColors.colombian;
+      // Live cup SVG liquid: clip spans y 42→188 (146px)
+      setSvgFill(cupLiquid, fill, 188, 146, color);
+      if (cupLiquidFx) cupLiquidFx.style.height = fill + "%";
+      liveCup.classList.toggle("glowing", fill > 0);
+      liveCup.classList.toggle("has-milk", milk === "milk" || milk === "half-half");
+
+      mobileFill.style.background = color;
+      mobileFill.style.height = fill + "%";
+
+      // Pour cup SVG liquid: clip spans y 28→145 (117px); pour fills to ~78%
+      setSvgFill(pourFill, 0, 145, 117, color);
+      pourFill.dataset.fullColor = color;
+      document.getElementById("pourStream").style.background =
+        "linear-gradient(180deg, var(--copper), " + color + ")";
+
+      // Progress ring (circumference ≈ 628)
+      const offset = 628 - (628 * progress) / 100;
+      cupRingFill.style.strokeDashoffset = offset;
+      progressFill.style.width = progress + "%";
+
+      liveCup.classList.remove("size-small", "size-medium", "size-large");
+      if (size) liveCup.classList.add("size-" + size);
+      liveCup.classList.toggle("filled", fill > 40);
+
+      cupSteam.classList.toggle("active", temperature === "hot" && !isWater);
+      cupIce.classList.toggle("active", temperature === "iced" && !isWater);
+
+      const orderTotal = coffee === "water" ? 0 : (size ? prices[size] : null);
+
+      if (!coffee) {
+        cupSummary.textContent = "Waiting for your picks…";
+        mobileStatus.innerHTML = "<strong>Empty cup</strong>Pick a coffee to begin";
+        cupPrice.classList.remove("show");
+        orderBtnPrice.textContent = "";
+        return;
+      }
+
+      const parts = [];
+      if (size) parts.push(size.charAt(0).toUpperCase() + size.slice(1));
+      parts.push(coffeeNames[coffee]);
+      if (!isWater && temperature) parts.push(temperature === "hot" ? "hot" : "iced");
+      if (!isWater && milk === "milk") parts.push("with milk");
+      if (!isWater && milk === "half-half") parts.push("with half & half");
+      if (!isWater && milk === "none") parts.push("black");
+
+      const line = parts.join(" · ");
+      cupSummary.innerHTML = "<strong>" + line + "</strong>";
+      mobileStatus.innerHTML = "<strong>" + coffeeNames[coffee] + "</strong>" + line;
+
+      if (orderTotal !== null) {
+        cupPrice.textContent = "$" + orderTotal.toFixed(2);
+        cupPrice.classList.add("show");
+        orderBtnPrice.textContent = "· $" + orderTotal.toFixed(2);
+      } else {
+        cupPrice.classList.remove("show");
+        orderBtnPrice.textContent = "";
+      }
+    }
+
+    // Customer name — remembered between visits
+    const customerName = document.getElementById("customerName");
+    customerName.value = localStorage.getItem("elemental-brew-name") || "";
+    customerName.addEventListener("input", () => {
+      localStorage.setItem("elemental-brew-name", customerName.value.trim());
+      checkOrderReady();
+    });
+
+    function checkOrderReady() {
+      const isWater = orderState.coffee === "water";
+      const ready =
+        customerName.value.trim() &&
+        orderState.coffee &&
+        orderState.size &&
+        (orderState.temperature || isWater) &&
+        (orderState.milk !== null || isWater);
+      orderButton.disabled = !ready;
+    }
+
+    orderButton.addEventListener("click", () => {
+      if (orderButton.disabled) return;
+      orderBar.classList.remove("visible");
+      pourOverlay.classList.add("active");
+      pourOverlay.setAttribute("aria-hidden", "false");
+      setSvgFill(pourFill, 0, 145, 117, pourFill.dataset.fullColor || liquidColors.colombian);
+
+      requestAnimationFrame(() => {
+        pourOverlay.classList.add("pouring");
+        requestAnimationFrame(() => {
+          setSvgFill(pourFill, 78, 145, 117, pourFill.dataset.fullColor || liquidColors.colombian);
+        });
+      });
+
+      setTimeout(() => {
+        pourOverlay.classList.remove("active", "pouring");
+        pourOverlay.setAttribute("aria-hidden", "true");
+        setSvgFill(pourFill, 0, 145, 117, pourFill.dataset.fullColor || liquidColors.colombian);
+        orderStage.classList.remove("active");
+        orderStage.style.display = "none";
+        ratingStage.classList.add("active");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 2400);
+    });
+
+    function setupRating(containerId, key) {
+      const container = document.getElementById(containerId);
+      const stars = [...container.querySelectorAll(".star")];
+
+      function paint(n, preview) {
+        stars.forEach((s, i) => {
+          s.classList.toggle(preview ? "preview" : "filled", i < n);
+          if (!preview) s.classList.remove("preview");
+        });
+      }
+
+      stars.forEach(star => {
+        star.addEventListener("click", () => {
+          const rating = parseInt(star.dataset.rating, 10);
+          orderState[key] = rating;
+          stars.forEach(s => s.classList.remove("filled", "preview"));
+          stars.forEach((s, i) => {
+            if (i < rating) {
+              setTimeout(() => s.classList.add("filled"), i * 40);
+            }
+          });
+          document.getElementById("ratingError").classList.remove("show");
+        });
+        star.addEventListener("mouseenter", () => paint(parseInt(star.dataset.rating, 10), true));
+      });
+
+      container.addEventListener("mouseleave", () => {
+        stars.forEach(s => s.classList.remove("preview"));
+        paint(orderState[key], false);
+      });
+    }
+
+    setupRating("coffeeRating", "coffeeRating");
+    setupRating("baristaRating", "baristaRating");
+
+    const tipButtons = document.querySelectorAll(".tip-btn");
+    const customTipInput = document.getElementById("customTipInput");
+    const customTipAmount = document.getElementById("customTipAmount");
+    const tipDisplay = document.getElementById("tipDisplay");
+
+    function updateTipDisplay() {
+      tipDisplay.textContent = orderState.tip > 0 ? "Tip: $" + orderState.tip.toFixed(2) : "";
+    }
+
+    tipButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        tipButtons.forEach(b => b.classList.remove("selected"));
+        btn.classList.add("selected");
+        const tipValue = btn.dataset.tip;
+        const orderTotal = orderState.coffee === "water" ? 0 : prices[orderState.size];
+
+        if (tipValue === "custom") {
+          customTipInput.classList.add("show");
+          customTipAmount.focus();
+          orderState.tipPercentage = "custom";
+        } else {
+          customTipInput.classList.remove("show");
+          const pct = parseInt(tipValue, 10);
+          orderState.tip = orderTotal * (pct / 100);
+          orderState.tipPercentage = pct;
+          updateTipDisplay();
+        }
+      });
+    });
+
+    customTipAmount.addEventListener("input", () => {
+      orderState.tip = parseFloat(customTipAmount.value) || 0;
+      updateTipDisplay();
+    });
+
+    function spawnConfetti() {
+      const box = document.getElementById("confetti");
+      box.innerHTML = "";
+      for (let i = 0; i < 18; i++) {
+        const bit = document.createElement("i");
+        const angle = (i / 18) * Math.PI * 2;
+        const dist = 40 + Math.random() * 70;
+        bit.style.setProperty("--cx", Math.cos(angle) * dist + "px");
+        bit.style.setProperty("--cy", Math.sin(angle) * dist + "px");
+        bit.style.setProperty("--cr", (Math.random() * 200 - 100) + "deg");
+        bit.style.animationDelay = (Math.random() * 0.15) + "s";
+        box.appendChild(bit);
+      }
+    }
+
+    document.getElementById("submitRating").addEventListener("click", () => {
+      const err = document.getElementById("ratingError");
+      if (orderState.coffeeRating === 0 || orderState.baristaRating === 0) {
+        err.textContent = "Please rate both your coffee and barista.";
+        err.classList.add("show");
+        return;
+      }
+
+      const coffeeName = coffeeNames[orderState.coffee];
+      const sizeName = orderState.size.charAt(0).toUpperCase() + orderState.size.slice(1);
+      const orderTotal = orderState.coffee === "water" ? 0 : prices[orderState.size];
+      const finalTotal = orderTotal + orderState.tip;
+
+      let tempDisplay = "";
+      if (orderState.coffee !== "water") {
+        tempDisplay = orderState.temperature === "hot" ? "Hot" : "Iced";
+      }
+
+      let milkDisplay = "—";
+      if (orderState.coffee !== "water") {
+        if (orderState.milk === "none") milkDisplay = "Black";
+        else if (orderState.milk === "milk") milkDisplay = "Milk";
+        else milkDisplay = "Half & Half";
+      }
+
+      const stars = n => "★".repeat(n) + "☆".repeat(5 - n);
+
+      buildBaristaHandoff();
+
+      document.getElementById("orderSummary").innerHTML = `
+        <p><span class="label">For</span><span class="value">${customerName.value.trim().replace(/</g, "&lt;")}</span></p>
+        <p><span class="label">Order</span><span class="value">${sizeName} ${coffeeName}</span></p>
+        ${tempDisplay ? `<p><span class="label">Temp</span><span class="value">${tempDisplay}</span></p>` : ""}
+        ${orderState.coffee !== "water" ? `<p><span class="label">Milk</span><span class="value">${milkDisplay}</span></p>` : ""}
+        <p><span class="label">Subtotal</span><span class="value">$${orderTotal.toFixed(2)}</span></p>
+        ${orderState.tip > 0 ? `<p><span class="label">Tip</span><span class="value">$${orderState.tip.toFixed(2)}</span></p>` : ""}
+        <p class="total"><span class="label">Total</span><span class="value">$${finalTotal.toFixed(2)}</span></p>
+        <p><span class="label">Coffee</span><span class="value">${stars(orderState.coffeeRating)}</span></p>
+        <p><span class="label">Barista</span><span class="value">${stars(orderState.baristaRating)}</span></p>
+      `;
+
+      ratingStage.classList.remove("active");
+      successStage.classList.add("active");
+      spawnConfetti();
+      // Retrigger check animation
+      const burst = successStage.querySelector(".success-burst");
+      burst.querySelectorAll(".ring, .ring2, .check").forEach(el => {
+        el.style.animation = "none";
+        void el.offsetWidth;
+        el.style.animation = "";
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+
+    // Barista handoff — encode the order into a barista.html link + QR code
+    let baristaLink = "";
+    const defaultHint = document.getElementById("handoffHint").textContent;
+
+    function buildBaristaHandoff() {
+      const payload = {
+        id: Date.now().toString(36) + "-" + Math.floor(Math.random() * 10000),
+        name: customerName.value.trim(),
+        coffee: orderState.coffee,
+        temperature: orderState.temperature,
+        milk: orderState.milk,
+        size: orderState.size,
+        coffeeRating: orderState.coffeeRating,
+        baristaRating: orderState.baristaRating,
+        tip: Math.round(orderState.tip * 100) / 100,
+        placedAt: Date.now()
+      };
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
+        .replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+      baristaLink = new URL("barista.html#o=" + encoded, location.href).href;
+
+      const qr = qrcode(0, "M");
+      qr.addData(baristaLink);
+      qr.make();
+      document.getElementById("qrCard").innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+      document.getElementById("handoffHint").textContent = defaultHint;
+    }
+
+    document.getElementById("shareOrderBtn").addEventListener("click", async () => {
+      if (!baristaLink) return;
+      const hint = document.getElementById("handoffHint");
+      if (navigator.share) {
+        try {
+          await navigator.share({ title: "Elemental Brew order", url: baristaLink });
+        } catch (e) { /* user dismissed the share sheet */ }
+      } else {
+        try {
+          await navigator.clipboard.writeText(baristaLink);
+          hint.textContent = "Link copied — send it to your barista!";
+        } catch (e) {
+          hint.textContent = baristaLink;
+        }
+      }
+    });
+
+    document.getElementById("newOrderButton").addEventListener("click", () => {
+      orderState = {
+        coffee: null, temperature: null, milk: null, size: null,
+        coffeeRating: 0, baristaRating: 0, tip: 0, tipPercentage: null
+      };
+
+      document.querySelectorAll(".coffee-option, .choice, .tip-btn").forEach(n => n.classList.remove("selected"));
+      document.querySelectorAll(".star").forEach(s => s.classList.remove("filled", "preview"));
+      customTipInput.classList.remove("show");
+      customTipAmount.value = "";
+      tipDisplay.textContent = "";
+      orderButton.disabled = true;
+      stepTemp.hidden = true;
+      stepMilk.hidden = true;
+      stepTemp.classList.remove("visible");
+      stepMilk.classList.remove("visible");
+      sizeStepNum.textContent = "03";
+      document.getElementById("ratingError").classList.remove("show");
+      orderBtnPrice.textContent = "";
+
+      updateCup();
+
+      successStage.classList.remove("active");
+      orderStage.style.display = "";
+      orderStage.classList.add("active");
+      orderBar.classList.add("visible");
+      revealSteps();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  </script>
+</body>
+</html>
