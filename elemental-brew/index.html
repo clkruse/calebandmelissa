@@ -2,30 +2,31 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Elemental Brew</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@500;600;700;800&family=Courier+Prime:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink: #080706;
-      --roast: #14110e;
-      --bark: #2c241c;
-      --foam: #f0ebe3;
-      --mist: #9e9488;
-      --copper: #e09540;
-      --ember: #d8ff3a;
-      --ember-hot: #f0ff8a;
-      --ember-dim: rgba(216, 255, 58, 0.14);
-      --steam: rgba(240, 235, 227, 0.06);
+      --void: #000000;
+      --carbon: #0a0a0b;
+      --graphite: #121214;
+      --line: rgba(255, 255, 255, 0.12);
+      --line-strong: rgba(255, 255, 255, 0.3);
+      --white: #f5f5f3;
+      --silver: #a8a8ae;
+      --dim: #66666e;
+      --glow: rgba(150, 180, 255, 0.16);
+      --spectral: linear-gradient(100deg, #6ea8ff 0%, #a98bff 30%, #ff9d7a 58%, #ffd9a0 76%, #7cd6ff 100%);
       --liquid-colombian: #3a2012;
       --liquid-breakfast: #6e4324;
       --liquid-decaf: #4c3828;
-      --liquid-water: #6eb0cc;
+      --liquid-water: #7cc4e8;
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-      --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
       --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+      --display: "Big Shoulders Display", sans-serif;
+      --mono: "IBM Plex Mono", monospace;
       --spot-x: 50%;
       --spot-y: 40%;
     }
@@ -35,80 +36,77 @@
     html { scroll-behavior: smooth; }
 
     body {
-      font-family: "DM Sans", sans-serif;
-      background: var(--ink);
-      color: var(--foam);
+      font-family: "Instrument Sans", sans-serif;
+      background: var(--void);
+      color: var(--white);
       min-height: 100vh;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
-      cursor: none;
+      text-rendering: optimizeLegibility;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      body { cursor: none; }
+      button, [role="button"], .coffee-option, .choice, .tip-btn, .star { cursor: none; }
     }
 
     @media (hover: none), (pointer: coarse) {
-      body { cursor: auto; }
       .cursor, .cursor-dot { display: none !important; }
     }
 
-    /* Film grain */
+    /* Fine grain */
     body::before {
       content: "";
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 10000;
-      opacity: 0.055;
+      opacity: 0.035;
       mix-blend-mode: overlay;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    /* Cursor spotlight */
+    /* Cursor spotlight — cool, faint */
     .ambient {
       position: fixed;
       inset: 0;
       pointer-events: none;
       z-index: 0;
       background:
-        radial-gradient(ellipse 50vw 40vh at var(--spot-x) var(--spot-y), rgba(224, 149, 64, 0.11), transparent 70%),
-        radial-gradient(ellipse 80vw 50vh at 80% 20%, rgba(216, 255, 58, 0.04), transparent 50%),
-        radial-gradient(ellipse 60vw 60vh at 10% 90%, rgba(58, 32, 18, 0.5), transparent 55%);
+        radial-gradient(ellipse 46vw 36vh at var(--spot-x) var(--spot-y), var(--glow), transparent 70%);
+      opacity: 0.5;
       transition: background 0.15s linear;
     }
 
-    /* Custom cursor */
+    /* Custom cursor — thin instrument ring */
     .cursor {
       position: fixed;
-      width: 40px;
-      height: 40px;
-      border: 1.5px solid rgba(216, 255, 58, 0.5);
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(255, 255, 255, 0.45);
       border-radius: 50%;
       pointer-events: none;
       z-index: 10001;
       translate: -50% -50%;
       transition: width 0.3s var(--ease-out), height 0.3s var(--ease-out), background 0.3s ease, border-color 0.3s ease;
-      mix-blend-mode: difference;
     }
 
     .cursor-dot {
       position: fixed;
-      width: 6px;
-      height: 6px;
-      background: var(--ember);
+      width: 4px;
+      height: 4px;
+      background: var(--white);
       border-radius: 50%;
       pointer-events: none;
       z-index: 10002;
       translate: -50% -50%;
-      transition: transform 0.15s var(--ease-out);
     }
 
     .cursor.hovering {
-      width: 64px;
-      height: 64px;
-      background: rgba(216, 255, 58, 0.12);
-      border-color: var(--ember);
-    }
-
-    button, [role="button"], .coffee-option, .choice, .tip-btn, .star {
-      cursor: none;
+      width: 52px;
+      height: 52px;
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.8);
     }
 
     button {
@@ -126,8 +124,8 @@
       display: flex;
       flex-direction: column;
       justify-content: flex-end;
-      padding: clamp(1.5rem, 4vw, 3.5rem);
-      padding-bottom: clamp(2.5rem, 7vw, 5rem);
+      padding: clamp(2.5rem, 5vw, 5rem);
+      padding-bottom: clamp(3.5rem, 8vh, 7rem);
       overflow: hidden;
     }
 
@@ -136,7 +134,7 @@
     }
 
     @keyframes heroExit {
-      to { opacity: 0; transform: scale(1.04); filter: blur(8px); }
+      to { opacity: 0; transform: scale(1.02); filter: blur(6px); }
     }
 
     .hero-bg {
@@ -144,176 +142,143 @@
       inset: 0;
       z-index: 0;
       background:
-        linear-gradient(180deg, transparent 10%, var(--ink) 92%),
-        radial-gradient(ellipse 70% 55% at 72% 38%, rgba(70, 38, 18, 0.85) 0%, transparent 70%),
-        radial-gradient(ellipse 45% 35% at 15% 75%, rgba(224, 149, 64, 0.22) 0%, transparent 60%),
-        var(--roast);
+        radial-gradient(ellipse 58% 48% at 71% 44%, rgba(110, 140, 200, 0.07) 0%, transparent 70%),
+        var(--void);
     }
 
     .hero-grid {
       position: absolute;
       inset: 0;
       z-index: 0;
-      opacity: 0.04;
+      opacity: 0.05;
       background-image:
-        linear-gradient(rgba(240, 235, 227, 0.5) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(240, 235, 227, 0.5) 1px, transparent 1px);
-      background-size: 64px 64px;
-      mask-image: radial-gradient(ellipse at 60% 40%, black 20%, transparent 70%);
+        linear-gradient(rgba(255, 255, 255, 0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.5) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: radial-gradient(ellipse at 65% 42%, black 15%, transparent 72%);
+      -webkit-mask-image: radial-gradient(ellipse at 65% 42%, black 15%, transparent 72%);
     }
 
-    .steam-field {
+    /* Blueprint frame */
+    .hero-frame {
       position: absolute;
-      inset: 0;
-      z-index: 1;
-      overflow: hidden;
+      inset: clamp(14px, 1.8vw, 24px);
+      border: 1px solid var(--line);
       pointer-events: none;
-    }
-
-    .steam-wisp {
-      position: absolute;
-      bottom: 12%;
-      width: 90px;
-      height: 220px;
-      background: radial-gradient(ellipse at center bottom, rgba(240, 235, 227, 0.22), transparent 70%);
-      filter: blur(22px);
-      animation: steamRise 7s ease-in-out infinite;
+      z-index: 2;
       opacity: 0;
+      animation: frameIn 1.4s var(--ease-out) 0.15s forwards;
     }
 
-    .steam-wisp:nth-child(1) { left: 15%; animation-delay: 0s; width: 110px; }
-    .steam-wisp:nth-child(2) { left: 38%; animation-delay: 1.6s; width: 70px; }
-    .steam-wisp:nth-child(3) { left: 55%; animation-delay: 0.7s; width: 95px; }
-    .steam-wisp:nth-child(4) { left: 72%; animation-delay: 2.8s; width: 65px; }
-    .steam-wisp:nth-child(5) { left: 28%; animation-delay: 3.8s; width: 88px; }
-    .steam-wisp:nth-child(6) { left: 62%; animation-delay: 5.1s; width: 75px; }
+    @keyframes frameIn { to { opacity: 1; } }
 
-    @keyframes steamRise {
-      0% { opacity: 0; transform: translateY(50px) scaleX(1) rotate(0deg); }
-      15% { opacity: 0.75; }
-      55% { opacity: 0.3; }
-      100% { opacity: 0; transform: translateY(-320px) scaleX(1.8) rotate(8deg); }
-    }
-
-    /* Floating spark particles */
-    .sparks {
+    .hero-frame::before,
+    .hero-frame::after {
+      content: "";
       position: absolute;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-      overflow: hidden;
+      width: 9px;
+      height: 9px;
+      border: 1px solid var(--line-strong);
     }
 
-    .spark {
+    .hero-frame::before { top: -5px; left: -5px; border-right: none; border-bottom: none; }
+    .hero-frame::after { bottom: -5px; right: -5px; border-left: none; border-top: none; }
+
+    .hero-anno {
       position: absolute;
-      width: 3px;
-      height: 3px;
-      background: var(--ember);
-      border-radius: 50%;
+      z-index: 3;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--dim);
       opacity: 0;
-      animation: sparkFloat 5s ease-in-out infinite;
-      box-shadow: 0 0 8px var(--ember);
+      animation: frameIn 1.2s var(--ease-out) 0.9s forwards;
+      white-space: nowrap;
     }
 
-    .spark:nth-child(1) { left: 20%; bottom: 30%; animation-delay: 0s; }
-    .spark:nth-child(2) { left: 45%; bottom: 45%; animation-delay: 1.2s; width: 2px; height: 2px; }
-    .spark:nth-child(3) { left: 70%; bottom: 25%; animation-delay: 2.4s; }
-    .spark:nth-child(4) { left: 55%; bottom: 55%; animation-delay: 0.6s; width: 2px; height: 2px; }
-    .spark:nth-child(5) { left: 35%; bottom: 20%; animation-delay: 3.5s; }
-    .spark:nth-child(6) { left: 80%; bottom: 40%; animation-delay: 1.8s; }
+    .hero-anno.tl { top: clamp(26px, 3vw, 42px); left: clamp(26px, 3vw, 42px); color: var(--silver); }
+    .hero-anno.tr { top: clamp(26px, 3vw, 42px); right: clamp(26px, 3vw, 42px); }
+    .hero-anno.br { bottom: clamp(26px, 3vw, 42px); right: clamp(26px, 3vw, 42px); }
 
-    @keyframes sparkFloat {
-      0%, 100% { opacity: 0; transform: translateY(0); }
-      20% { opacity: 0.9; }
-      80% { opacity: 0.3; }
-      100% { opacity: 0; transform: translateY(-120px) translateX(20px); }
+    @media (max-width: 700px) {
+      .hero-anno.tr { display: none; }
     }
 
+    /* The cup — photographic, blends into the void */
     .hero-cup {
       position: absolute;
-      right: clamp(-2%, 1vw, 4%);
-      bottom: 4%;
-      width: min(34vw, 340px);
-      aspect-ratio: 4 / 5;
+      right: clamp(-4%, 2vw, 7%);
+      top: 50%;
+      translate: 0 -56%;
+      width: min(52vw, 640px);
+      aspect-ratio: 1 / 1;
       z-index: 1;
       opacity: 0;
-      animation: heroCupIn 1.6s var(--ease-out) 0.25s forwards;
+      animation: heroCupIn 2s var(--ease-out) 0.3s forwards;
       pointer-events: none;
-      -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 22%, black 100%);
-      mask-image: linear-gradient(90deg, transparent 0%, black 22%, black 100%);
     }
 
-    .hero-cup svg {
+    .hero-cup img {
       width: 100%;
       height: 100%;
-      overflow: visible;
-      shape-rendering: geometricPrecision;
-      /* SVG-native shadow — avoids filter rasterization blur on the artwork */
-      filter: none;
+      object-fit: contain;
+      display: block;
+      -webkit-mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, black 62%, transparent 98%);
+      mask-image: radial-gradient(ellipse 72% 72% at 50% 50%, black 62%, transparent 98%);
     }
 
     .hero-cup-parallax {
       width: 100%;
       height: 100%;
-      transition: transform 0.45s var(--ease-out);
+      transition: transform 0.6s var(--ease-out);
       will-change: transform;
     }
 
-    .hero-cup .wave-a {
-      animation: waveShift 3.4s ease-in-out infinite;
-      transform-origin: center;
-      transform-box: fill-box;
-    }
-
-    .hero-cup .wave-b {
-      animation: waveShift 4.2s ease-in-out infinite reverse;
-      transform-origin: center;
-      transform-box: fill-box;
-    }
-
-    .hero-cup .steam-path {
-      stroke-dasharray: 80;
-      animation: steamDraw 4s ease-in-out infinite;
-    }
-
-    .hero-cup .steam-path:nth-child(2) { animation-delay: 0.8s; }
-    .hero-cup .steam-path:nth-child(3) { animation-delay: 1.6s; }
-
-    @keyframes waveShift {
-      0%, 100% { transform: translateX(0); }
-      50% { transform: translateX(-10px); }
-    }
-
-    @keyframes steamDraw {
-      0% { opacity: 0; stroke-dashoffset: 80; }
-      30% { opacity: 0.55; }
-      100% { opacity: 0; stroke-dashoffset: -40; }
-    }
-
     @keyframes heroCupIn {
-      from { opacity: 0; transform: translateY(80px) rotate(-4deg) scale(0.94); }
-      to { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+      from { opacity: 0; transform: scale(1.04); }
+      to { opacity: 1; transform: scale(1); }
     }
 
     .hero-content {
       position: relative;
       z-index: 2;
-      /* Leave room for the cup; never let the brand column exceed available space */
-      max-width: min(36rem, calc(100vw - 3rem));
+      max-width: min(44rem, calc(100vw - 3rem));
       width: 100%;
     }
 
+    .hero-kicker {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--silver);
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      opacity: 0;
+      animation: riseIn 0.9s var(--ease-out) 0.35s forwards;
+    }
+
+    .hero-kicker::before {
+      content: "";
+      width: 32px;
+      height: 1px;
+      background: var(--line-strong);
+    }
+
     .brand {
-      font-family: "Syne", sans-serif;
+      font-family: var(--display);
       font-weight: 800;
-      /* Cap size so the 9-letter word always fits the column */
-      font-size: clamp(2.4rem, 6.5vw, 5.25rem);
-      line-height: 1.02;
-      letter-spacing: -0.03em;
-      margin-bottom: 1.5rem;
+      font-size: clamp(4.25rem, 14.5vw, 11.5rem);
+      line-height: 0.88;
+      letter-spacing: 0.005em;
+      text-transform: uppercase;
+      margin-bottom: 1.6rem;
       overflow: visible;
-      /* Optical padding so heavy Syne glyphs aren't flush-clipped at the edge */
-      padding-inline: 0.02em 0.06em;
     }
 
     .brand .line {
@@ -324,48 +289,48 @@
     .brand .word {
       display: inline-block;
       opacity: 0;
-      transform: translateY(1.1rem);
-      filter: blur(6px);
-      animation: wordRise 0.95s var(--ease-out) forwards;
-      will-change: transform, opacity, filter;
-      /* Prevent any mid-word wrap/clip */
+      transform: translateY(0.35em);
+      animation: wordRise 1.1s var(--ease-out) forwards;
+      will-change: transform, opacity;
       white-space: nowrap;
     }
 
     .brand .line:nth-child(1) .word { animation-delay: 0.2s; }
-    .brand .line:nth-child(2) .word { animation-delay: 0.35s; }
+    .brand .line:nth-child(2) .word { animation-delay: 0.34s; }
 
     @keyframes wordRise {
-      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .brand .accent-word {
-      color: var(--ember);
       position: relative;
-      text-shadow: 0 0 60px rgba(216, 255, 58, 0.35);
+      background: var(--spectral);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      color: transparent;
     }
 
     .brand .accent-word::after {
       content: "";
       position: absolute;
-      left: 0;
-      bottom: 0.02em;
+      left: 0.015em;
+      bottom: -0.06em;
       width: 0;
-      height: 0.085em;
-      background: linear-gradient(90deg, var(--ember), var(--ember-hot));
-      box-shadow: 0 0 20px rgba(216, 255, 58, 0.6);
-      animation: underlineGrow 0.9s var(--ease-out) 1.1s forwards;
-      border-radius: 1px;
+      height: 2px;
+      background: var(--spectral);
+      animation: underlineGrow 1s var(--ease-out) 1.2s forwards;
     }
 
-    @keyframes underlineGrow { to { width: 100%; } }
+    @keyframes underlineGrow { to { width: calc(100% - 0.03em); } }
 
     .hero-tagline {
-      font-size: clamp(1.05rem, 2.2vw, 1.3rem);
-      color: var(--mist);
-      max-width: 30ch;
-      line-height: 1.55;
-      margin-bottom: 2.25rem;
+      font-family: "Courier Prime", monospace;
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--silver);
+      max-width: 34ch;
+      line-height: 1.6;
+      margin-bottom: 2.5rem;
       opacity: 0;
       animation: riseIn 1s var(--ease-out) 0.65s forwards;
     }
@@ -373,80 +338,39 @@
     .cta-start {
       display: inline-flex;
       align-items: center;
-      gap: 0.85rem;
-      padding: 1.1rem 2rem;
-      background: var(--ember);
-      color: var(--ink);
-      font-family: "Syne", sans-serif;
+      gap: 1rem;
+      padding: 1.15rem 2.5rem;
+      background: var(--white);
+      color: #000;
+      font-family: var(--display);
       font-weight: 700;
-      font-size: 1.05rem;
-      letter-spacing: 0.01em;
-      border-radius: 999px;
+      font-size: 1.15rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      border-radius: 2px;
       position: relative;
-      overflow: hidden;
-      transition: transform 0.4s var(--ease-spring), box-shadow 0.4s ease;
+      transition: transform 0.35s var(--ease-out), box-shadow 0.35s ease;
       opacity: 0;
       animation: riseIn 1s var(--ease-out) 0.8s forwards;
-      box-shadow:
-        0 0 0 0 rgba(216, 255, 58, 0.5),
-        0 8px 32px rgba(216, 255, 58, 0.25);
     }
 
-    .cta-start::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
-      translate: -100% 0;
-      transition: none;
+    @media (hover: hover) {
+      .cta-start:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.35), 0 14px 44px rgba(150, 180, 255, 0.18);
+      }
+      .cta-start:hover .arrow { transform: translateY(3px); }
     }
 
-    .cta-start:hover {
-      transform: scale(1.05);
-      box-shadow:
-        0 0 50px 8px rgba(216, 255, 58, 0.4),
-        0 12px 40px rgba(216, 255, 58, 0.3);
-    }
-
-    .cta-start:hover::before {
-      animation: sheen 0.7s var(--ease-out);
-    }
-
-    @keyframes sheen {
-      to { translate: 100% 0; }
-    }
-
-    .cta-start:active { transform: scale(0.96); }
+    .cta-start:active { transform: scale(0.975); }
 
     .cta-start .arrow {
       transition: transform 0.35s var(--ease-out);
     }
 
-    .cta-start:hover .arrow { transform: translateY(4px); }
-
     @keyframes riseIn {
-      from { opacity: 0; transform: translateY(32px); }
+      from { opacity: 0; transform: translateY(26px); }
       to { opacity: 1; transform: translateY(0); }
-    }
-
-    .scroll-hint {
-      position: absolute;
-      bottom: 1.5rem;
-      right: clamp(1.5rem, 4vw, 3.5rem);
-      z-index: 2;
-      font-family: "Syne", sans-serif;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: var(--mist);
-      opacity: 0;
-      animation: riseIn 1s var(--ease-out) 1.2s forwards;
-      display: none;
-    }
-
-    @media (min-width: 900px) {
-      .scroll-hint { display: block; }
     }
 
     /* ═══════════ ORDER ═══════════ */
@@ -455,8 +379,8 @@
       z-index: 1;
       display: none;
       min-height: 100svh;
-      padding: clamp(1.25rem, 3vw, 2.5rem);
-      padding-bottom: 9rem;
+      padding: clamp(1.5rem, 4vw, 3.5rem);
+      padding-bottom: 10rem;
     }
 
     .order-stage.active {
@@ -466,78 +390,75 @@
       animation: stageEnter 0.8s var(--ease-out);
     }
 
-    @media (min-width: 900px) {
+    @media (min-width: 768px) {
       .order-stage.active {
-        grid-template-columns: 1fr minmax(280px, 360px);
+        grid-template-columns: 1fr minmax(320px, min(44vw, 540px));
         align-items: start;
-        gap: 3.5rem;
-        padding-right: clamp(1.5rem, 4vw, 3rem);
+        gap: clamp(2rem, 4vw, 4rem);
       }
     }
 
     @keyframes stageEnter {
-      from { opacity: 0; transform: translateY(40px); }
+      from { opacity: 0; transform: translateY(32px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .order-flow { max-width: 700px; }
+    .order-flow { max-width: 720px; }
 
     .stage-header {
-      margin-bottom: 2.75rem;
+      margin-bottom: 3rem;
       opacity: 0;
       animation: riseIn 0.8s var(--ease-out) 0.1s forwards;
     }
 
     .stage-eyebrow {
-      font-family: "Syne", sans-serif;
-      font-size: 0.7rem;
-      font-weight: 700;
-      letter-spacing: 0.18em;
+      font-family: var(--mono);
+      font-size: 0.66rem;
+      font-weight: 500;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      color: var(--ember);
-      margin-bottom: 0.7rem;
+      color: var(--silver);
+      margin-bottom: 0.9rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.85rem;
     }
 
     .stage-eyebrow::before {
       content: "";
-      width: 24px;
-      height: 2px;
-      background: var(--ember);
-      box-shadow: 0 0 10px var(--ember);
+      width: 28px;
+      height: 1px;
+      background: var(--line-strong);
     }
 
     .stage-header h2 {
-      font-family: "Syne", sans-serif;
-      font-weight: 800;
-      font-size: clamp(2rem, 5vw, 3rem);
-      letter-spacing: -0.035em;
-      line-height: 1.05;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(2.6rem, 6vw, 4rem);
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      line-height: 0.95;
     }
 
     .progress-track {
-      margin-top: 1.25rem;
+      margin-top: 1.5rem;
       height: 2px;
-      background: var(--bark);
-      border-radius: 2px;
+      background: var(--graphite);
       overflow: hidden;
-      max-width: 200px;
+      max-width: 260px;
     }
 
     .progress-fill {
       height: 100%;
       width: 0%;
-      background: linear-gradient(90deg, var(--copper), var(--ember));
-      box-shadow: 0 0 12px rgba(216, 255, 58, 0.5);
+      background: var(--spectral);
       transition: width 0.6s var(--ease-out);
     }
 
     .step {
-      margin-bottom: 2.75rem;
+      margin-bottom: 3rem;
       opacity: 0;
-      transform: translateY(28px);
+      transform: translateY(24px);
       transition: opacity 0.65s var(--ease-out), transform 0.65s var(--ease-out);
     }
 
@@ -548,222 +469,202 @@
 
     .step-label {
       display: flex;
-      align-items: baseline;
-      gap: 0.85rem;
-      margin-bottom: 1.1rem;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .step-label::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
     }
 
     .step-num {
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 0.75rem;
-      color: var(--ember);
-      letter-spacing: 0.1em;
-      text-shadow: 0 0 12px rgba(216, 255, 58, 0.4);
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 0.72rem;
+      color: var(--dim);
+      letter-spacing: 0.12em;
     }
 
     .step-title {
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 1.2rem;
-      letter-spacing: -0.01em;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.45rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     /* Name input */
     .name-wrap input {
       width: 100%;
-      max-width: 420px;
-      padding: 1rem 1.1rem;
-      background: var(--roast);
-      border: 1px solid var(--bark);
-      color: var(--foam);
+      max-width: 440px;
+      padding: 1.05rem 1.15rem;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      color: var(--white);
       font-family: inherit;
-      font-size: 1rem;
+      font-size: 1.05rem;
       outline: none;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .name-wrap input:focus {
-      border-color: var(--ember);
-      box-shadow: 0 0 0 3px rgba(216, 255, 58, 0.15);
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px var(--glow);
     }
 
-    .name-wrap input::placeholder { color: var(--mist); opacity: 0.7; }
+    .name-wrap input::placeholder { color: var(--dim); }
 
-    /* Coffee options */
-    .coffee-grid { display: grid; gap: 0.4rem; }
+    /* Coffee options — collapsed hairline rows */
+    .coffee-grid {
+      display: grid;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+    }
 
     .coffee-option {
       position: relative;
       display: grid;
       grid-template-columns: auto 1fr auto;
       align-items: center;
-      gap: 1.15rem;
-      padding: 1.2rem 1.3rem;
-      border: 1px solid transparent;
-      border-bottom: 1px solid var(--bark);
-      transition:
-        background 0.4s var(--ease-soft),
-        border-color 0.4s ease,
-        transform 0.4s var(--ease-spring),
-        box-shadow 0.4s ease;
+      gap: 1.2rem;
+      padding: 1.2rem 1.35rem;
+      border-bottom: 1px solid var(--line);
+      transition: background 0.35s var(--ease-soft);
       overflow: hidden;
+      min-height: 44px;
     }
 
-    .coffee-option .ripple {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(216, 255, 58, 0.25);
-      transform: scale(0);
-      pointer-events: none;
-      animation: rippleOut 0.6s var(--ease-out) forwards;
-    }
-
-    @keyframes rippleOut {
-      to { transform: scale(4); opacity: 0; }
-    }
+    .coffee-option:last-child { border-bottom: none; }
 
     .coffee-option::before {
       content: "";
       position: absolute;
-      inset: 0;
-      background: linear-gradient(105deg, var(--ember-dim) 0%, transparent 55%);
-      opacity: 0;
-      transition: opacity 0.4s ease;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 2px;
+      background: var(--spectral);
+      transform: scaleY(0);
+      transform-origin: top;
+      transition: transform 0.4s var(--ease-out);
     }
 
-    .coffee-option:hover {
-      background: var(--steam);
-      border-color: rgba(216, 255, 58, 0.15);
+    @media (hover: hover) {
+      .coffee-option:hover { background: rgba(255, 255, 255, 0.03); }
     }
-
-    .coffee-option:hover::before { opacity: 0.6; }
 
     .coffee-option.selected {
-      border-color: var(--ember);
-      background: var(--ember-dim);
-      transform: scale(1.015);
-      box-shadow:
-        0 0 0 1px rgba(216, 255, 58, 0.2),
-        0 8px 32px rgba(216, 255, 58, 0.08);
+      background: rgba(255, 255, 255, 0.05);
     }
 
-    .coffee-option.selected::before { opacity: 1; }
+    .coffee-option.selected::before { transform: scaleY(1); }
 
-    .coffee-swatch {
+    /* Chromatic glass logos — black canvases screen-blend into the row */
+    .coffee-logo {
       position: relative;
       z-index: 1;
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      border: 2px solid rgba(240, 235, 227, 0.12);
-      transition: transform 0.5s var(--ease-spring), box-shadow 0.5s ease, border-color 0.4s ease;
+      width: 68px;
+      height: 68px;
+      object-fit: contain;
+      mix-blend-mode: screen;
+      transform: scale(1.5);
+      filter: brightness(0.9);
+      transition: transform 0.4s var(--ease-out), filter 0.4s ease;
     }
 
-    .coffee-swatch::after {
-      content: "";
-      position: absolute;
-      inset: 6px;
-      border-radius: 50%;
-      background: radial-gradient(circle at 30% 25%, rgba(255, 255, 255, 0.25), transparent 50%);
+    .coffee-option.selected .coffee-logo {
+      transform: scale(1.6);
+      filter: brightness(1.15);
     }
-
-    .coffee-option.selected .coffee-swatch {
-      transform: scale(1.18);
-      box-shadow: 0 0 28px rgba(216, 255, 58, 0.35);
-      border-color: var(--ember);
-    }
-
-    .coffee-option[data-coffee="colombian"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #7a4528, #1e1008); }
-    .coffee-option[data-coffee="breakfast"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #b07040, #3e2410); }
-    .coffee-option[data-coffee="decaf"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #8a6848, #32241a); }
-    .coffee-option[data-coffee="water"] .coffee-swatch { background: radial-gradient(circle at 35% 30%, #c4e8f5, #3a8098); }
 
     .coffee-info { position: relative; z-index: 1; }
 
     .coffee-name {
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 1.08rem;
-      letter-spacing: -0.01em;
-      margin-bottom: 0.25rem;
+      font-weight: 600;
+      font-size: 1.05rem;
+      letter-spacing: -0.005em;
+      margin-bottom: 0.2rem;
     }
 
     .coffee-desc {
-      font-size: 0.88rem;
-      color: var(--mist);
+      font-size: 0.86rem;
+      color: var(--silver);
       line-height: 1.4;
     }
 
     .coffee-check {
       position: relative;
       z-index: 1;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      border: 1.5px solid var(--bark);
+      width: 24px;
+      height: 24px;
+      border-radius: 2px;
+      border: 1px solid var(--line);
       display: grid;
       place-items: center;
-      transition: all 0.4s var(--ease-spring);
+      transition: background 0.3s ease, border-color 0.3s ease;
     }
 
     .coffee-option.selected .coffee-check {
-      background: var(--ember);
-      border-color: var(--ember);
-      transform: scale(1.15);
-      box-shadow: 0 0 16px rgba(216, 255, 58, 0.5);
+      background: var(--white);
+      border-color: var(--white);
     }
 
     .coffee-check svg {
       width: 12px;
       height: 12px;
       opacity: 0;
-      color: var(--ink);
+      color: #000;
       transition: opacity 0.25s ease;
     }
 
     .coffee-option.selected .coffee-check svg { opacity: 1; }
 
-    /* Choices */
+    /* Choice cards */
     .choice-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 0.7rem;
+      gap: 0.6rem;
     }
 
     .choice {
       position: relative;
-      padding: 1.35rem 1rem;
+      padding: 1.4rem 1rem;
       text-align: center;
-      border: 1px solid var(--bark);
+      border: 1px solid var(--line);
+      border-radius: 2px;
       background: transparent;
       overflow: hidden;
-      transition:
-        border-color 0.35s ease,
-        transform 0.4s var(--ease-spring),
-        box-shadow 0.35s ease;
+      transition: border-color 0.35s ease, color 0.35s ease, transform 0.3s var(--ease-out);
+      min-height: 44px;
     }
 
     .choice::after {
       content: "";
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, var(--ember-hot), var(--ember));
+      background: var(--white);
       transform: translateY(101%);
-      transition: transform 0.45s var(--ease-out);
+      transition: transform 0.4s var(--ease-out);
       z-index: 0;
     }
 
-    .choice:hover {
-      border-color: rgba(216, 255, 58, 0.45);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+    @media (hover: hover) {
+      .choice:hover {
+        border-color: var(--line-strong);
+        transform: translateY(-2px);
+      }
     }
 
+    .choice:active { transform: scale(0.98); }
+
     .choice.selected {
-      border-color: var(--ember);
-      color: var(--ink);
-      box-shadow: 0 0 28px rgba(216, 255, 58, 0.2);
+      border-color: var(--white);
+      color: #000;
     }
 
     .choice.selected::after { transform: translateY(0); }
@@ -772,9 +673,11 @@
     .choice-meta { position: relative; z-index: 1; }
 
     .choice-name {
-      font-family: "Syne", sans-serif;
+      font-family: var(--display);
       font-weight: 700;
-      font-size: 1.08rem;
+      font-size: 1.25rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
       margin-bottom: 0.3rem;
       display: flex;
       align-items: center;
@@ -783,25 +686,23 @@
     }
 
     .choice-meta {
-      font-size: 0.8rem;
-      color: var(--mist);
+      font-size: 0.78rem;
+      color: var(--silver);
       transition: color 0.35s ease;
     }
 
-    .choice.selected .choice-meta { color: rgba(8, 7, 6, 0.6); }
-
-    .choice-icon { font-size: 1.15rem; line-height: 1; }
+    .choice.selected .choice-meta { color: rgba(0, 0, 0, 0.55); }
 
     .size-row .choice-name {
       flex-direction: column;
-      gap: 0.55rem;
+      gap: 0.6rem;
     }
 
     .cup-glyph {
       display: block;
       margin: 0 auto;
-      opacity: 0.7;
-      transition: opacity 0.3s ease, transform 0.4s var(--ease-spring);
+      opacity: 0.6;
+      transition: opacity 0.3s ease, transform 0.35s var(--ease-out);
       color: currentColor;
     }
 
@@ -814,7 +715,7 @@
 
     .choice.selected .cup-glyph {
       opacity: 1;
-      transform: scale(1.08);
+      transform: scale(1.05);
     }
 
     .cup-glyph.small { width: 28px; height: 32px; }
@@ -826,33 +727,32 @@
       display: none;
       position: sticky;
       top: 2rem;
-      padding: 2.25rem 1.75rem;
+      padding: 2.5rem 1.75rem 2.25rem;
       text-align: center;
-      background: linear-gradient(165deg, rgba(36, 28, 22, 0.7), rgba(16, 13, 11, 0.5));
-      border: 1px solid rgba(240, 235, 227, 0.06);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: var(--carbon);
+      border: 1px solid var(--line);
+      border-radius: 2px;
     }
 
-    @media (min-width: 900px) {
+    @media (min-width: 768px) {
       .cup-preview { display: block; animation: riseIn 0.8s var(--ease-out) 0.3s both; }
     }
 
     .cup-preview-label {
-      font-family: "Syne", sans-serif;
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.2em;
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.24em;
       text-transform: uppercase;
-      color: var(--mist);
-      margin-bottom: 1.75rem;
+      color: var(--dim);
+      margin-bottom: 1.9rem;
     }
 
     .cup-stage {
       position: relative;
-      width: 200px;
-      height: 260px;
-      margin: 0 auto 1.75rem;
+      width: min(100%, 430px);
+      aspect-ratio: 6 / 7;
+      margin: 0 auto 1.5rem;
     }
 
     /* Progress ring */
@@ -870,23 +770,22 @@
 
     .cup-ring circle {
       fill: none;
-      stroke-width: 2;
+      stroke-width: 1.5;
     }
 
-    .cup-ring .track { stroke: var(--bark); }
+    .cup-ring .track { stroke: var(--graphite); }
 
     .cup-ring .fill {
-      stroke: var(--ember);
-      stroke-linecap: round;
+      stroke: url(#ringGrad);
+      stroke-linecap: butt;
       stroke-dasharray: 628;
       stroke-dashoffset: 628;
       transition: stroke-dashoffset 0.7s var(--ease-out);
-      filter: drop-shadow(0 0 6px rgba(216, 255, 58, 0.5));
     }
 
     .cup-steam {
       position: absolute;
-      top: 0;
+      top: 24%;
       left: 50%;
       translate: -50% 0;
       width: 110px;
@@ -904,7 +803,7 @@
       bottom: 0;
       width: 20px;
       height: 45px;
-      background: radial-gradient(ellipse, rgba(240, 235, 227, 0.4), transparent);
+      background: radial-gradient(ellipse, rgba(245, 245, 243, 0.35), transparent);
       filter: blur(7px);
       border-radius: 50%;
       animation: cupSteam 2.8s ease-in-out infinite;
@@ -916,120 +815,72 @@
 
     @keyframes cupSteam {
       0%, 100% { transform: translateY(0) scaleX(1); opacity: 0.25; }
-      50% { transform: translateY(-36px) scaleX(1.5); opacity: 0.75; }
-    }
-
-    .cup-ice {
-      position: absolute;
-      top: 62px;
-      left: 50%;
-      translate: -50% 0;
-      width: 95px;
-      height: 55px;
-      opacity: 0;
-      transition: opacity 0.5s ease;
-      pointer-events: none;
-      z-index: 3;
-    }
-
-    .cup-ice.active { opacity: 1; }
-
-    .cup-ice span {
-      position: absolute;
-      background: linear-gradient(135deg, rgba(200, 230, 255, 0.45), rgba(160, 210, 255, 0.2));
-      border: 1px solid rgba(200, 230, 255, 0.45);
-      backdrop-filter: blur(2px);
-      animation: iceBob 3.2s ease-in-out infinite;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3);
-    }
-
-    .cup-ice span:nth-child(1) {
-      width: 24px; height: 17px; left: 12%; top: 10px;
-      transform: rotate(18deg); border-radius: 3px; animation-delay: 0s;
-    }
-    .cup-ice span:nth-child(2) {
-      width: 19px; height: 15px; left: 42%; top: 2px;
-      transform: rotate(-14deg); border-radius: 2px; animation-delay: 0.4s;
-    }
-    .cup-ice span:nth-child(3) {
-      width: 21px; height: 16px; left: 64%; top: 16px;
-      transform: rotate(10deg); border-radius: 3px; animation-delay: 0.85s;
-    }
-
-    @keyframes iceBob {
-      0%, 100% { translate: 0 0; }
-      50% { translate: 3px -5px; }
+      50% { transform: translateY(-36px) scaleX(1.5); opacity: 0.7; }
     }
 
     .live-cup {
       position: absolute;
-      bottom: 12px;
+      bottom: 8px;
       left: 50%;
       translate: -50% 0;
-      width: 130px;
-      height: 162px;
-      transition: width 0.55s var(--ease-out), height 0.55s var(--ease-out);
-      animation: cupBob 4s ease-in-out infinite;
-      animation-play-state: paused;
+      width: 87%;
+      aspect-ratio: 1227 / 1000;
+      transition: width 0.55s var(--ease-out);
     }
 
-    .live-cup.filled { animation-play-state: running; }
+    .live-cup.size-small { width: 74%; }
+    .live-cup.size-medium { width: 87%; }
+    .live-cup.size-large { width: 100%; }
 
-    @keyframes cupBob {
-      0%, 100% { translate: -50% 0; }
-      50% { translate: -50% -6px; }
-    }
-
-    .live-cup.size-small { width: 100px; height: 125px; }
-    .live-cup.size-medium { width: 130px; height: 162px; }
-    .live-cup.size-large { width: 152px; height: 190px; }
-
-    .live-cup-svg {
+    .live-cup .cup-img {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
-      overflow: visible;
-      display: block;
-      filter: drop-shadow(0 18px 28px rgba(0, 0, 0, 0.4));
-    }
-
-    .cup-liquid {
-      transition: y 0.75s var(--ease-out), height 0.75s var(--ease-out), fill 0.5s ease;
-    }
-
-    @supports not (transition: y 1s) {
-      .cup-liquid { transition: fill 0.5s ease; }
-    }
-
-    .live-cup.glowing .cup-liquid {
-      filter: drop-shadow(0 -6px 14px rgba(224, 149, 64, 0.35));
-    }
-
-    .cup-liquid-fx {
-      position: absolute;
-      left: 26%;
-      right: 26%;
-      bottom: 8%;
-      height: 0%;
-      pointer-events: none;
-      border-radius: 0 0 40% 40%;
-      transition: height 0.75s var(--ease-out);
-      background: linear-gradient(180deg, rgba(250, 240, 225, 0.45), transparent 55%);
+      object-fit: contain;
       opacity: 0;
+      transition: opacity 0.55s var(--ease-soft);
+      pointer-events: none;
     }
 
-    .live-cup.has-milk .cup-liquid-fx {
-      opacity: 1;
-      animation: milkSwirl 3.5s ease-in-out infinite;
+    .live-cup .cup-img.on { opacity: 1; }
+
+    /* Finished-drink photos have opaque black backgrounds — screen-blend, then
+       fade just the outer margin (the mug spans ~84% of the cropped frame) */
+    .live-cup .cup-img.solid {
+      mix-blend-mode: screen;
+      -webkit-mask-image: radial-gradient(ellipse 60% 62% at 50% 50%, black 72%, transparent 98%);
+      mask-image: radial-gradient(ellipse 60% 62% at 50% 50%, black 72%, transparent 98%);
     }
 
-    @keyframes milkSwirl {
-      0%, 100% { transform: translateX(-4%) skewX(-2deg); opacity: 0.55; }
-      50% { transform: translateX(4%) skewX(2deg); opacity: 0.9; }
+    /* Videos are framed slightly tighter than the stills, so scale to match.
+       Mask + blend live on the wrapper: Chrome applies them unreliably on <video> itself. */
+    .live-cup .cup-video-box {
+      position: absolute;
+      inset: 0;
+      /* Measured against the stills: video mug is smaller (0.780 vs 0.839 frame width),
+         higher (bottom 0.856 vs 0.918), and right of center (0.511 vs 0.476) */
+      transform: translate(-3.5%, 3.5%) scale(1.076);
+      opacity: 0;
+      transition: opacity 0.4s var(--ease-soft);
+      pointer-events: none;
+      mix-blend-mode: screen;
+      -webkit-mask-image: radial-gradient(ellipse 60% 62% at 50% 50%, black 72%, transparent 98%);
+      mask-image: radial-gradient(ellipse 60% 62% at 50% 50%, black 72%, transparent 98%);
     }
 
-    .order-summary-text {
-      font-size: 0.92rem;
-      color: var(--mist);
+    .live-cup .cup-video-box video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    .live-cup .cup-video-box.on { opacity: 1; }
+
+.order-summary-text {
+      font-size: 0.9rem;
+      color: var(--silver);
       line-height: 1.55;
       min-height: 3.2em;
       transition: opacity 0.3s ease;
@@ -1037,24 +888,22 @@
 
     .order-summary-text strong {
       display: block;
-      color: var(--foam);
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
+      color: var(--white);
+      font-weight: 600;
+      font-size: 0.98rem;
       margin-bottom: 0.25rem;
-      letter-spacing: -0.01em;
     }
 
     .cup-price {
-      margin-top: 1rem;
-      font-family: "Syne", sans-serif;
-      font-weight: 800;
-      font-size: 1.5rem;
-      color: var(--ember);
+      margin-top: 1.1rem;
+      font-family: var(--mono);
+      font-weight: 600;
+      font-size: 1.35rem;
+      letter-spacing: 0.02em;
+      color: var(--white);
       opacity: 0;
       transform: translateY(8px);
       transition: opacity 0.4s ease, transform 0.4s var(--ease-out);
-      text-shadow: 0 0 24px rgba(216, 255, 58, 0.3);
     }
 
     .cup-price.show {
@@ -1070,10 +919,11 @@
       right: 0;
       z-index: 100;
       padding: 1.1rem 1.25rem calc(1.1rem + env(safe-area-inset-bottom));
-      background: linear-gradient(180deg, transparent, rgba(8, 7, 6, 0.95) 35%);
+      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.95) 40%);
       display: none;
       justify-content: center;
       backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .order-bar.visible {
@@ -1082,78 +932,52 @@
     }
 
     .order-btn {
-      width: min(100%, 500px);
-      padding: 1.2rem 2rem;
-      background: var(--foam);
-      color: var(--ink);
-      font-family: "Syne", sans-serif;
-      font-weight: 800;
-      font-size: 1.1rem;
-      letter-spacing: 0.01em;
-      border-radius: 999px;
+      width: min(100%, 520px);
+      padding: 1.25rem 2rem;
+      background: var(--white);
+      color: #000;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      border-radius: 2px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 0.75rem;
+      gap: 0.85rem;
       position: relative;
-      overflow: hidden;
-      transition:
-        transform 0.4s var(--ease-spring),
-        background 0.35s ease,
-        opacity 0.35s ease,
-        box-shadow 0.35s ease;
+      transition: transform 0.3s var(--ease-out), opacity 0.35s ease, box-shadow 0.35s ease;
     }
 
-    .order-btn:disabled {
-      opacity: 0.3;
-      cursor: none;
+    .order-btn:disabled { opacity: 0.22; }
+
+    @media (hover: hover) {
+      .order-btn:not(:disabled):hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 14px 44px rgba(150, 180, 255, 0.16);
+      }
     }
 
-    .order-btn:not(:disabled) {
-      box-shadow: 0 0 0 0 rgba(216, 255, 58, 0.4);
-    }
-
-    .order-btn:not(:disabled):hover {
-      transform: scale(1.035);
-      background: var(--ember);
-      box-shadow: 0 0 40px 6px rgba(216, 255, 58, 0.35);
-    }
-
-    .order-btn:not(:disabled):active { transform: scale(0.97); }
+    .order-btn:not(:disabled):active { transform: scale(0.98); }
 
     .order-btn .btn-price {
-      font-size: 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
       opacity: 0.55;
-      font-weight: 700;
       transition: opacity 0.3s ease;
     }
 
-    .order-btn:not(:disabled) .btn-price { opacity: 0.7; }
-
-    .order-btn .pulse-ring {
-      position: absolute;
-      inset: -2px;
-      border-radius: 999px;
-      border: 2px solid var(--ember);
-      opacity: 0;
-      pointer-events: none;
-    }
-
-    .order-btn:not(:disabled) .pulse-ring {
-      animation: btnPulse 2.2s ease-out infinite;
-    }
-
-    @keyframes btnPulse {
-      0% { transform: scale(1); opacity: 0.7; }
-      100% { transform: scale(1.1); opacity: 0; }
-    }
+    .order-btn:not(:disabled) .btn-price { opacity: 0.65; }
 
     /* Pour overlay */
     .pour-overlay {
       position: fixed;
       inset: 0;
       z-index: 200;
-      background: var(--ink);
+      background: var(--void);
       display: none;
       flex-direction: column;
       align-items: center;
@@ -1173,9 +997,9 @@
 
     .pour-glow {
       position: absolute;
-      width: 200px;
-      height: 200px;
-      background: radial-gradient(circle, rgba(224, 149, 64, 0.3), transparent 70%);
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(150, 180, 255, 0.14), transparent 70%);
       filter: blur(40px);
       opacity: 0;
       transition: opacity 0.8s ease;
@@ -1184,13 +1008,11 @@
     .pour-overlay.pouring .pour-glow { opacity: 1; }
 
     .pour-stream {
-      width: 10px;
+      width: 6px;
       height: 0;
-      background: linear-gradient(180deg, var(--copper), var(--liquid-colombian));
-      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), var(--liquid-colombian));
       margin-bottom: -2px;
       transition: height 0.7s var(--ease-out);
-      box-shadow: 0 0 20px rgba(224, 149, 64, 0.5);
       position: relative;
       z-index: 1;
     }
@@ -1202,7 +1024,7 @@
       height: 148px;
       position: relative;
       z-index: 1;
-      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
+      filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.6));
     }
 
     .pour-cup-svg {
@@ -1216,37 +1038,14 @@
       transition: y 1.3s var(--ease-out) 0.35s, height 1.3s var(--ease-out) 0.35s, fill 0.4s ease;
     }
 
-    .pour-splash {
-      position: absolute;
-      bottom: 42%;
-      left: 50%;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: var(--copper);
-      opacity: 0;
-      z-index: 2;
-    }
-
-    .pour-overlay.pouring .pour-splash {
-      animation: splash 0.8s var(--ease-out) 0.9s;
-    }
-
-    .pour-splash:nth-child(2) { animation-delay: 1s !important; --sx: -18px; --sy: -30px; }
-    .pour-splash:nth-child(3) { animation-delay: 1.05s !important; --sx: 20px; --sy: -24px; }
-    .pour-splash:nth-child(4) { animation-delay: 1.1s !important; --sx: -8px; --sy: -40px; }
-
-    @keyframes splash {
-      0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
-      100% { opacity: 0; transform: translate(calc(-50% + var(--sx, 0px)), var(--sy, -28px)) scale(0.3); }
-    }
-
     .pour-text {
-      margin-top: 2.25rem;
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 1.25rem;
-      letter-spacing: 0.06em;
+      margin-top: 2.5rem;
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 0.72rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--silver);
       opacity: 0;
       transition: opacity 0.45s ease 0.5s;
       position: relative;
@@ -1262,8 +1061,8 @@
       position: relative;
       z-index: 1;
       min-height: 100svh;
-      padding: clamp(2rem, 5vw, 4.5rem) clamp(1.25rem, 3vw, 2.5rem);
-      max-width: 560px;
+      padding: clamp(2.5rem, 6vw, 5rem) clamp(1.5rem, 4vw, 3rem);
+      max-width: 600px;
       margin: 0 auto;
     }
 
@@ -1283,29 +1082,41 @@
 
     .rating-stage h2,
     .success-stage h2 {
-      font-family: "Syne", sans-serif;
-      font-weight: 800;
-      font-size: clamp(2.2rem, 5.5vw, 3.2rem);
-      letter-spacing: -0.035em;
-      line-height: 1.05;
-      margin-bottom: 0.6rem;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: clamp(2.8rem, 6.5vw, 4.2rem);
+      letter-spacing: 0.01em;
+      text-transform: uppercase;
+      line-height: 0.95;
+      margin-bottom: 0.7rem;
     }
 
     .rating-sub {
-      color: var(--mist);
-      margin-bottom: 2.75rem;
-      font-size: 1.08rem;
-      line-height: 1.5;
+      color: var(--silver);
+      margin-bottom: 3rem;
+      font-size: 1.05rem;
+      line-height: 1.55;
     }
 
-    .rating-group { margin-bottom: 2.5rem; }
+    .rating-group { margin-bottom: 2.75rem; }
 
     .rating-group h3 {
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 1.05rem;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.25rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
       margin-bottom: 1.1rem;
-      letter-spacing: -0.01em;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .rating-group h3::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--line);
     }
 
     .stars { display: flex; gap: 0.4rem; }
@@ -1316,57 +1127,34 @@
       display: grid;
       place-items: center;
       position: relative;
-      transition: transform 0.35s var(--ease-spring);
+      transition: transform 0.3s var(--ease-out);
     }
 
     .star svg {
-      width: 38px;
-      height: 38px;
+      width: 36px;
+      height: 36px;
       fill: transparent;
-      stroke: var(--bark);
-      stroke-width: 1.5;
+      stroke: var(--dim);
+      stroke-width: 1.25;
       transition: fill 0.25s ease, stroke 0.25s ease, filter 0.25s ease;
     }
 
-    .star:hover { transform: scale(1.2) rotate(-8deg); }
+    @media (hover: hover) {
+      .star:hover { transform: scale(1.14); }
+    }
 
     .star.filled svg,
     .star.preview svg {
-      fill: var(--ember);
-      stroke: var(--ember);
-      filter: drop-shadow(0 0 10px rgba(216, 255, 58, 0.55));
+      fill: var(--white);
+      stroke: var(--white);
+      filter: drop-shadow(0 0 12px rgba(150, 180, 255, 0.4));
     }
 
-    .star.filled { animation: starBurst 0.5s var(--ease-spring); }
+    .star.filled { animation: starPop 0.4s var(--ease-out); }
 
-    .star .sparkle {
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      background: var(--ember);
-      border-radius: 50%;
-      opacity: 0;
-      pointer-events: none;
-      box-shadow: 0 0 6px var(--ember);
-    }
-
-    .star.filled .sparkle {
-      animation: starSparkle 0.55s var(--ease-out) forwards;
-    }
-
-    .star .sparkle:nth-child(1) { --sx: 18px; --sy: -20px; }
-    .star .sparkle:nth-child(2) { --sx: -16px; --sy: -18px; animation-delay: 0.05s; }
-    .star .sparkle:nth-child(3) { --sx: 22px; --sy: 8px; animation-delay: 0.08s; }
-    .star .sparkle:nth-child(4) { --sx: -20px; --sy: 12px; animation-delay: 0.1s; }
-
-    @keyframes starSparkle {
-      0% { opacity: 1; transform: translate(0, 0) scale(1); }
-      100% { opacity: 0; transform: translate(var(--sx, 16px), var(--sy, -18px)) scale(0); }
-    }
-
-    @keyframes starBurst {
+    @keyframes starPop {
       0% { transform: scale(1); }
-      35% { transform: scale(1.4) rotate(10deg); }
+      40% { transform: scale(1.22); }
       100% { transform: scale(1); }
     }
 
@@ -1379,23 +1167,29 @@
 
     .tip-btn {
       padding: 1rem 0.5rem;
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 0.95rem;
-      border: 1px solid var(--bark);
-      transition: all 0.35s var(--ease-spring);
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      transition: border-color 0.3s ease, background 0.3s ease, color 0.3s ease, transform 0.3s var(--ease-out);
+      min-height: 44px;
     }
 
-    .tip-btn:hover {
-      border-color: rgba(216, 255, 58, 0.45);
-      transform: translateY(-3px);
+    @media (hover: hover) {
+      .tip-btn:hover {
+        border-color: var(--line-strong);
+        transform: translateY(-2px);
+      }
     }
+
+    .tip-btn:active { transform: scale(0.97); }
 
     .tip-btn.selected {
-      background: var(--ember);
-      border-color: var(--ember);
-      color: var(--ink);
-      box-shadow: 0 0 24px rgba(216, 255, 58, 0.3);
+      background: var(--white);
+      border-color: var(--white);
+      color: #000;
     }
 
     .custom-tip-wrap {
@@ -1411,51 +1205,59 @@
     .custom-tip-wrap input {
       width: 100%;
       padding: 1rem 1.1rem;
-      background: var(--roast);
-      border: 1px solid var(--bark);
-      color: var(--foam);
-      font-family: inherit;
+      background: transparent;
+      border: 1px solid var(--line);
+      border-radius: 2px;
+      color: var(--white);
+      font-family: var(--mono);
       font-size: 1rem;
       outline: none;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
 
     .custom-tip-wrap input:focus {
-      border-color: var(--ember);
-      box-shadow: 0 0 0 3px rgba(216, 255, 58, 0.15);
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 3px var(--glow);
     }
 
+    .custom-tip-wrap input::placeholder { color: var(--dim); }
+
     .tip-display {
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      color: var(--ember);
+      font-family: var(--mono);
+      font-weight: 500;
+      font-size: 0.9rem;
+      letter-spacing: 0.04em;
+      color: var(--white);
       min-height: 1.5em;
-      margin-bottom: 1.75rem;
-      text-shadow: 0 0 16px rgba(216, 255, 58, 0.3);
+      margin-bottom: 1.9rem;
     }
 
     .submit-rating {
       width: 100%;
-      padding: 1.2rem;
-      background: var(--ember);
-      color: var(--ink);
-      font-family: "Syne", sans-serif;
-      font-weight: 800;
-      font-size: 1.08rem;
-      border-radius: 999px;
-      transition: transform 0.4s var(--ease-spring), box-shadow 0.35s ease;
-      box-shadow: 0 8px 32px rgba(216, 255, 58, 0.2);
+      padding: 1.25rem;
+      background: var(--white);
+      color: #000;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.25rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      transition: transform 0.3s var(--ease-out), box-shadow 0.35s ease;
+      min-height: 44px;
     }
 
-    .submit-rating:hover {
-      transform: scale(1.025);
-      box-shadow: 0 0 48px rgba(216, 255, 58, 0.4);
+    @media (hover: hover) {
+      .submit-rating:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 14px 44px rgba(150, 180, 255, 0.16);
+      }
     }
 
-    .submit-rating:active { transform: scale(0.97); }
+    .submit-rating:active { transform: scale(0.98); }
 
     .rating-error {
-      color: #ff7a7a;
+      color: #ff8f8f;
       font-size: 0.9rem;
       margin-top: 0.85rem;
       min-height: 1.3em;
@@ -1468,15 +1270,15 @@
     /* Success */
     .success-burst {
       position: relative;
-      width: 110px;
-      height: 110px;
-      margin-bottom: 1.75rem;
+      width: 104px;
+      height: 104px;
+      margin-bottom: 2rem;
     }
 
     .success-burst .ring {
       position: absolute;
       inset: 0;
-      border: 2px solid var(--ember);
+      border: 1px solid var(--line-strong);
       border-radius: 50%;
       animation: successRing 0.9s var(--ease-out) forwards;
     }
@@ -1484,7 +1286,7 @@
     .success-burst .ring2 {
       position: absolute;
       inset: -12px;
-      border: 1px solid rgba(216, 255, 58, 0.4);
+      border: 1px solid var(--line);
       border-radius: 50%;
       animation: successRing 1.1s var(--ease-out) 0.1s forwards;
     }
@@ -1494,115 +1296,101 @@
       inset: 0;
       display: grid;
       place-items: center;
-      background: var(--ember);
+      background: var(--white);
       border-radius: 50%;
       transform: scale(0);
-      animation: successCheck 0.55s var(--ease-spring) 0.2s forwards;
-      box-shadow: 0 0 40px rgba(216, 255, 58, 0.5);
+      animation: successCheck 0.5s var(--ease-out) 0.2s forwards;
+      box-shadow: 0 0 60px rgba(150, 180, 255, 0.25);
     }
 
     .success-burst .check svg {
-      width: 42px;
-      height: 42px;
-      stroke: var(--ink);
+      width: 40px;
+      height: 40px;
+      stroke: #000;
       fill: none;
-      stroke-width: 3;
+      stroke-width: 2.5;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
 
-    .confetti {
-      position: absolute;
-      inset: -60px;
-      pointer-events: none;
-      overflow: visible;
-    }
-
-    .confetti i {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 6px;
-      height: 6px;
-      background: var(--ember);
-      border-radius: 1px;
-      opacity: 0;
-      animation: confettiBurst 1s var(--ease-out) forwards;
-    }
-
-    .confetti i:nth-child(odd) { background: var(--copper); border-radius: 50%; width: 5px; height: 5px; }
-    .confetti i:nth-child(3n) { background: var(--foam); width: 4px; height: 8px; }
-
-    @keyframes confettiBurst {
-      0% { opacity: 1; transform: translate(0, 0) rotate(0deg) scale(1); }
-      100% { opacity: 0; transform: translate(var(--cx), var(--cy)) rotate(var(--cr)) scale(0.3); }
-    }
-
     @keyframes successRing {
-      from { transform: scale(0.4); opacity: 0; }
+      from { transform: scale(0.5); opacity: 0; }
       40% { opacity: 1; }
-      to { transform: scale(1.7); opacity: 0; }
+      to { transform: scale(1.65); opacity: 0; }
     }
 
     @keyframes successCheck { to { transform: scale(1); } }
 
     .order-details {
-      color: var(--mist);
-      font-size: 1rem;
+      color: var(--silver);
+      font-size: 0.95rem;
       line-height: 1.75;
-      margin-bottom: 2.25rem;
+      margin-bottom: 2.5rem;
       text-align: left;
       width: 100%;
       padding: 1.75rem 0;
-      border-top: 1px solid var(--bark);
-      border-bottom: 1px solid var(--bark);
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
     }
 
     .order-details p {
       display: flex;
       justify-content: space-between;
+      align-items: baseline;
       gap: 1rem;
       margin-bottom: 0.45rem;
     }
 
-    .order-details .label { color: var(--mist); }
+    .order-details .label {
+      color: var(--dim);
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
 
     .order-details .value {
-      color: var(--foam);
-      font-family: "Syne", sans-serif;
-      font-weight: 600;
+      color: var(--white);
+      font-weight: 500;
       text-align: right;
     }
 
+    .order-details .total {
+      margin-top: 0.6rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid var(--line);
+    }
+
     .order-details .total .value {
-      color: var(--ember);
+      font-family: var(--mono);
+      font-weight: 600;
       font-size: 1.2rem;
-      text-shadow: 0 0 20px rgba(216, 255, 58, 0.3);
     }
 
     /* Barista handoff */
     .handoff {
       width: 100%;
-      margin-bottom: 2.25rem;
+      margin-bottom: 2.5rem;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1.1rem;
+      gap: 1.2rem;
     }
 
     .handoff-title {
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 1.05rem;
-      letter-spacing: -0.01em;
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.25rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
 
     .qr-card {
       background: #fff;
       padding: 14px;
-      border-radius: 8px;
+      border-radius: 2px;
       line-height: 0;
-      box-shadow: 0 0 40px rgba(216, 255, 58, 0.12), 0 12px 32px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 0 0 1px var(--line), 0 16px 48px rgba(0, 0, 0, 0.5);
     }
 
     .qr-card svg {
@@ -1612,73 +1400,71 @@
     }
 
     .share-btn {
-      padding: 1.05rem 2.25rem;
-      background: var(--ember);
-      color: var(--ink);
-      font-family: "Syne", sans-serif;
-      font-weight: 800;
-      font-size: 1rem;
-      border-radius: 999px;
+      padding: 1.1rem 2.5rem;
+      background: var(--white);
+      color: #000;
+      font-family: var(--display);
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      border-radius: 2px;
       display: inline-flex;
       align-items: center;
-      gap: 0.6rem;
-      transition: transform 0.4s var(--ease-spring), box-shadow 0.35s ease;
-      box-shadow: 0 8px 32px rgba(216, 255, 58, 0.2);
+      gap: 0.7rem;
+      transition: transform 0.3s var(--ease-out), box-shadow 0.35s ease;
+      min-height: 44px;
     }
 
-    .share-btn:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 40px rgba(216, 255, 58, 0.4);
+    @media (hover: hover) {
+      .share-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3), 0 14px 44px rgba(150, 180, 255, 0.16);
+      }
     }
 
-    .share-btn:active { transform: scale(0.96); }
+    .share-btn:active { transform: scale(0.97); }
 
     .handoff-hint {
-      font-size: 0.88rem;
-      color: var(--mist);
-      max-width: 34ch;
+      font-size: 0.86rem;
+      color: var(--silver);
+      max-width: 36ch;
       line-height: 1.5;
       word-break: break-word;
     }
 
     .new-order-btn {
-      padding: 1.05rem 2.25rem;
-      border: 1.5px solid var(--foam);
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
-      font-size: 1rem;
-      border-radius: 999px;
-      transition: all 0.4s var(--ease-spring);
+      padding: 1.1rem 2.5rem;
+      border: 1px solid var(--line-strong);
+      color: var(--white);
+      font-family: var(--display);
+      font-weight: 600;
+      font-size: 1.1rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      border-radius: 2px;
+      transition: background 0.3s ease, color 0.3s ease, transform 0.3s var(--ease-out);
+      min-height: 44px;
     }
 
-    .new-order-btn:hover {
-      background: var(--foam);
-      color: var(--ink);
-      transform: scale(1.05);
-      box-shadow: 0 0 30px rgba(240, 235, 227, 0.2);
+    @media (hover: hover) {
+      .new-order-btn:hover {
+        background: var(--white);
+        color: #000;
+        transform: translateY(-2px);
+      }
     }
 
-    /* Mobile strip */
-    .mobile-cup-strip {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.1rem;
-      margin-bottom: 1.75rem;
-      border: 1px solid rgba(240, 235, 227, 0.06);
-      background: linear-gradient(135deg, rgba(36, 28, 22, 0.8), rgba(16, 13, 11, 0.6));
-      backdrop-filter: blur(12px);
-    }
+    .new-order-btn:active { transform: scale(0.97); }
 
-    @media (min-width: 900px) {
-      .mobile-cup-strip { display: none; }
-    }
+    /* Mobile strip — retired: phones now get the full cup preview pinned on top */
+    .mobile-cup-strip { display: none; }
 
     .mobile-cup-mini {
-      width: 48px;
-      height: 58px;
-      border: 2px solid rgba(240, 235, 227, 0.28);
-      border-radius: 3px 3px 12px 12px;
+      width: 46px;
+      height: 56px;
+      border: 1px solid var(--line-strong);
+      border-radius: 2px 2px 10px 10px;
       position: relative;
       overflow: hidden;
       flex-shrink: 0;
@@ -1696,54 +1482,88 @@
 
     .mobile-cup-status {
       font-size: 0.85rem;
-      color: var(--mist);
+      color: var(--silver);
       line-height: 1.4;
     }
 
     .mobile-cup-status strong {
       display: block;
-      color: var(--foam);
-      font-family: "Syne", sans-serif;
-      font-weight: 700;
+      color: var(--white);
+      font-weight: 600;
       font-size: 0.95rem;
       margin-bottom: 0.15rem;
     }
 
-    @media (max-width: 900px) {
-      .hero-content {
-        max-width: calc(100vw - 2.5rem);
+    /* Narrow screens — cup preview pinned to the top half, options scroll below */
+    @media (max-width: 767px) {
+      .cup-preview {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50svh;
+        z-index: 90;
+        padding: 0.6rem 1rem;
+        background: rgba(5, 5, 6, 0.92);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+        border: none;
+        border-bottom: 1px solid var(--line);
+        animation: none;
       }
 
-      .brand {
-        font-size: clamp(2.35rem, 8.5vw, 3.75rem);
+      .cup-preview-label { display: none; }
+
+      .cup-stage {
+        width: auto;
+        height: min(360px, calc(50svh - 96px));
+        max-width: 88vw;
+        aspect-ratio: 6 / 7;
+        margin: 0 auto 0.6rem;
       }
 
-      .hero-cup {
-        width: min(36vw, 240px);
-        opacity: 0.45;
-      }
-    }
+      .live-cup { bottom: 4px; }
 
-    @media (max-width: 600px) {
-      .hero-cup {
-        opacity: 0.22;
-        width: min(46vw, 180px);
-        right: -6%;
-        -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 35%, black 100%);
-        mask-image: linear-gradient(90deg, transparent 0%, black 35%, black 100%);
-      }
-
-      .hero-content {
+      .order-summary-text {
+        min-height: 0;
+        align-self: stretch;
         max-width: 100%;
+        font-size: 0.85rem;
+        padding: 0 1.25rem;
       }
 
-      .brand {
-        font-size: clamp(2.25rem, 10.5vw, 3.25rem);
+      .cup-price {
+        margin-top: 0.4rem;
+        font-size: 1.15rem;
       }
+
+      .order-stage.active { padding-top: calc(50svh + 1.5rem); }
+
+      .step { scroll-margin-top: calc(50svh + 1rem); }
+
+      .hero {
+        justify-content: flex-end;
+        padding-bottom: clamp(3rem, 9vh, 5rem);
+      }
+
+      .hero-cup {
+        width: min(88vw, 460px);
+        right: 50%;
+        translate: 50% -50%;
+        top: 34%;
+      }
+
+      .hero-content { max-width: 100%; }
+
+      .brand { font-size: clamp(3.6rem, 17vw, 6rem); }
 
       .tip-row { grid-template-columns: repeat(2, 1fr); }
 
-      .star { width: 44px; height: 44px; }
+      .star { width: 46px; height: 46px; }
       .star svg { width: 32px; height: 32px; }
     }
 
@@ -1759,6 +1579,17 @@
   </style>
 </head>
 <body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#6ea8ff"/>
+        <stop offset="35%" stop-color="#a98bff"/>
+        <stop offset="65%" stop-color="#ff9d7a"/>
+        <stop offset="100%" stop-color="#7cd6ff"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
   <div class="ambient" aria-hidden="true"></div>
   <div class="cursor" id="cursor" aria-hidden="true"></div>
   <div class="cursor-dot" id="cursorDot" aria-hidden="true"></div>
@@ -1767,167 +1598,17 @@
   <section class="hero" id="hero">
     <div class="hero-bg"></div>
     <div class="hero-grid" aria-hidden="true"></div>
-    <div class="steam-field" aria-hidden="true">
-      <div class="steam-wisp"></div>
-      <div class="steam-wisp"></div>
-      <div class="steam-wisp"></div>
-      <div class="steam-wisp"></div>
-      <div class="steam-wisp"></div>
-      <div class="steam-wisp"></div>
-    </div>
-    <div class="sparks" aria-hidden="true">
-      <div class="spark"></div>
-      <div class="spark"></div>
-      <div class="spark"></div>
-      <div class="spark"></div>
-      <div class="spark"></div>
-      <div class="spark"></div>
-    </div>
+    <div class="hero-frame" aria-hidden="true"></div>
+    <p class="hero-anno tl" aria-hidden="true">Elemental Brew — Nº 001</p>
+    <p class="hero-anno tr" aria-hidden="true">Colombian / Breakfast / Decaf / Water</p>
+    <p class="hero-anno br" aria-hidden="true">Four elements — one cup</p>
     <div class="hero-cup" id="heroCup" aria-hidden="true">
       <div class="hero-cup-parallax" id="heroCupParallax">
-      <svg viewBox="0 0 320 400" fill="none" xmlns="http://www.w3.org/2000/svg" shape-rendering="geometricPrecision">
-        <defs>
-          <linearGradient id="cupBody" x1="70" y1="70" x2="230" y2="340" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#5a3824"/>
-            <stop offset="45%" stop-color="#2a1810"/>
-            <stop offset="100%" stop-color="#120a08"/>
-          </linearGradient>
-          <linearGradient id="cupInner" x1="100" y1="90" x2="200" y2="300" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#1a100c"/>
-            <stop offset="100%" stop-color="#0a0604"/>
-          </linearGradient>
-          <linearGradient id="liquidGrad" x1="160" y1="140" x2="160" y2="310" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#6b4228"/>
-            <stop offset="40%" stop-color="#3d2314"/>
-            <stop offset="100%" stop-color="#24140c"/>
-          </linearGradient>
-          <linearGradient id="foamTop" x1="160" y1="128" x2="160" y2="168" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#f2ebe2" stop-opacity="0.92"/>
-            <stop offset="100%" stop-color="#f2ebe2" stop-opacity="0"/>
-          </linearGradient>
-          <linearGradient id="glassShine" x1="90" y1="100" x2="140" y2="280" gradientUnits="userSpaceOnUse">
-            <stop offset="0%" stop-color="#fff" stop-opacity="0.28"/>
-            <stop offset="55%" stop-color="#fff" stop-opacity="0.06"/>
-            <stop offset="100%" stop-color="#fff" stop-opacity="0"/>
-          </linearGradient>
-          <radialGradient id="cupShadow" cx="0.5" cy="0.5" r="0.5">
-            <stop offset="0%" stop-color="#000" stop-opacity="0.5"/>
-            <stop offset="100%" stop-color="#000" stop-opacity="0"/>
-          </radialGradient>
-          <clipPath id="cupInnerClip">
-            <path d="M92 96
-              C92 96 96 300 100 318
-              C108 340 148 352 160 352
-              C172 352 212 340 220 318
-              C224 300 228 96 228 96
-              Z"/>
-          </clipPath>
-          <filter id="steamBlur" x="-30%" y="-30%" width="160%" height="160%">
-            <feGaussianBlur stdDeviation="1.2"/>
-          </filter>
-        </defs>
-
-        <!-- Ground shadow -->
-        <ellipse cx="155" cy="372" rx="88" ry="14" fill="url(#cupShadow)"/>
-
-        <!-- Steam -->
-        <g fill="none" stroke="rgba(240,235,227,0.4)" stroke-width="2.25" stroke-linecap="round" filter="url(#steamBlur)">
-          <path class="steam-path" d="M118 78 C114 58 128 48 122 28"/>
-          <path class="steam-path" d="M158 72 C162 52 148 42 156 22"/>
-          <path class="steam-path" d="M196 80 C200 60 186 50 192 30"/>
-        </g>
-
-        <!-- Outer cup body -->
-        <path d="M78 88
-          C78 88 84 308 90 328
-          C100 354 140 368 160 368
-          C180 368 220 354 230 328
-          C236 308 242 88 242 88
-          Z"
-          fill="url(#cupBody)"
-          stroke="rgba(240,235,227,0.22)"
-          stroke-width="2"/>
-
-        <!-- Inner wall -->
-        <path d="M92 96
-          C92 96 96 300 100 318
-          C108 340 148 352 160 352
-          C172 352 212 340 220 318
-          C224 300 228 96 228 96
-          Z"
-          fill="url(#cupInner)"/>
-
-        <!-- Liquid -->
-        <g clip-path="url(#cupInnerClip)">
-          <rect x="88" y="148" width="144" height="220" fill="url(#liquidGrad)"/>
-          <path class="wave-a" d="M70 152
-            C95 138 120 166 145 152
-            C170 138 195 166 220 150
-            C245 136 270 158 280 148
-            L280 180 L70 180 Z"
-            fill="#5a3420" opacity="0.85"/>
-          <path class="wave-b" d="M70 158
-            C100 172 125 144 155 158
-            C185 172 210 146 240 160
-            C260 168 275 152 280 156
-            L280 190 L70 190 Z"
-            fill="#4a2a18" opacity="0.55"/>
-          <ellipse cx="160" cy="152" rx="68" ry="14" fill="url(#foamTop)"/>
-        </g>
-
-        <!-- Rim (ellipse ring) -->
-        <ellipse cx="160" cy="88" rx="86" ry="22"
-          fill="none"
-          stroke="rgba(240,235,227,0.38)"
-          stroke-width="2.5"/>
-        <ellipse cx="160" cy="88" rx="72" ry="16"
-          fill="rgba(10,6,4,0.35)"
-          stroke="rgba(240,235,227,0.12)"
-          stroke-width="1.5"/>
-
-        <!-- Handle (double-stroke for thickness) -->
-        <path d="M242 118
-          C278 124 292 148 292 178
-          C292 214 274 240 242 248"
-          fill="none"
-          stroke="rgba(240,235,227,0.28)"
-          stroke-width="14"
-          stroke-linecap="round"/>
-        <path d="M242 118
-          C278 124 292 148 292 178
-          C292 214 274 240 242 248"
-          fill="none"
-          stroke="#1a100c"
-          stroke-width="8"
-          stroke-linecap="round"/>
-        <path d="M242 118
-          C278 124 292 148 292 178
-          C292 214 274 240 242 248"
-          fill="none"
-          stroke="rgba(240,235,227,0.18)"
-          stroke-width="2"
-          stroke-linecap="round"/>
-
-        <!-- Specular highlight -->
-        <path d="M104 118
-          C108 180 110 240 116 300"
-          stroke="url(#glassShine)"
-          stroke-width="10"
-          stroke-linecap="round"
-          opacity="0.7"/>
-
-        <!-- Accent swirl -->
-        <path d="M112 220
-          C132 198 152 236 172 214
-          C188 198 204 228 222 208"
-          stroke="rgba(216,255,58,0.45)"
-          stroke-width="2"
-          stroke-linecap="round"
-          fill="none"/>
-      </svg>
+        <img src="cup.jpg" alt="" draggable="false">
       </div>
     </div>
     <div class="hero-content">
+      <p class="hero-kicker">Precision home coffee bar</p>
       <h1 class="brand">
         <span class="line"><span class="word">Elemental</span></span>
         <span class="line"><span class="word accent-word">Brew</span></span>
@@ -1936,11 +1617,10 @@
       <button class="cta-start" id="startBtn" type="button">
         Start your brew
         <svg class="arrow" width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-          <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M8 3v10M3 8l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </button>
     </div>
-    <p class="scroll-hint">Four elements. One cup.</p>
   </section>
 
   <!-- ORDER -->
@@ -1979,7 +1659,7 @@
         </div>
         <div class="coffee-grid">
           <div class="coffee-option" data-coffee="colombian" role="button" tabindex="0">
-            <div class="coffee-swatch" aria-hidden="true"></div>
+            <img class="coffee-logo" src="images/opt/starbucks_logo.png" alt="" draggable="false" aria-hidden="true">
             <div class="coffee-info">
               <div class="coffee-name">Starbucks Colombian</div>
               <div class="coffee-desc">Medium roast with a balanced, nutty flavor</div>
@@ -1989,7 +1669,7 @@
             </div>
           </div>
           <div class="coffee-option" data-coffee="breakfast" role="button" tabindex="0">
-            <div class="coffee-swatch" aria-hidden="true"></div>
+            <img class="coffee-logo" src="images/opt/breakfast_blend_logo.png" alt="" draggable="false" aria-hidden="true">
             <div class="coffee-info">
               <div class="coffee-name">Breakfast Blend Light Roast</div>
               <div class="coffee-desc">Light, bright, and citrusy morning blend</div>
@@ -1999,7 +1679,7 @@
             </div>
           </div>
           <div class="coffee-option" data-coffee="decaf" role="button" tabindex="0">
-            <div class="coffee-swatch" aria-hidden="true"></div>
+            <img class="coffee-logo" src="images/opt/decaf_logo.png" alt="" draggable="false" aria-hidden="true">
             <div class="coffee-info">
               <div class="coffee-name">Nescafe Taster's Choice Decaf</div>
               <div class="coffee-desc">Smooth instant decaf coffee</div>
@@ -2009,7 +1689,7 @@
             </div>
           </div>
           <div class="coffee-option" data-coffee="water" role="button" tabindex="0">
-            <div class="coffee-swatch" aria-hidden="true"></div>
+            <img class="coffee-logo" src="images/opt/water_logo.png" alt="" draggable="false" aria-hidden="true">
             <div class="coffee-info">
               <div class="coffee-name">Fresh Water</div>
               <div class="coffee-desc">Complimentary filtered water</div>
@@ -2021,24 +1701,24 @@
         </div>
       </div>
 
-      <div class="step" id="stepTemp" hidden>
+      <div class="step" id="stepTemp">
         <div class="step-label">
           <span class="step-num">03</span>
           <span class="step-title">Hot or iced?</span>
         </div>
         <div class="choice-row">
           <div class="choice temperature-choice" data-temperature="hot" role="button" tabindex="0">
-            <div class="choice-name"><span class="choice-icon" aria-hidden="true">♨</span> Hot</div>
+            <div class="choice-name">Hot</div>
             <div class="choice-meta">Classic hot brew</div>
           </div>
           <div class="choice temperature-choice" data-temperature="iced" role="button" tabindex="0">
-            <div class="choice-name"><span class="choice-icon" aria-hidden="true">❄</span> Iced</div>
+            <div class="choice-name">Iced</div>
             <div class="choice-meta">Refreshing cold brew</div>
           </div>
         </div>
       </div>
 
-      <div class="step" id="stepMilk" hidden>
+      <div class="step" id="stepMilk">
         <div class="step-label">
           <span class="step-num">04</span>
           <span class="step-title">Milk or cream?</span>
@@ -2061,14 +1741,14 @@
 
       <div class="step" id="stepSize">
         <div class="step-label">
-          <span class="step-num" id="sizeStepNum">03</span>
+          <span class="step-num" id="sizeStepNum">05</span>
           <span class="step-title">Pick your size</span>
         </div>
         <div class="choice-row size-row">
           <div class="choice size-choice" data-size="small" role="button" tabindex="0">
             <div class="choice-name">
               <span class="cup-glyph small" aria-hidden="true">
-                <svg viewBox="0 0 40 48" fill="none"><path d="M10 10c0 0 1.2 26 2 30 1.2 5.5 6.5 7.5 8 7.5s6.8-2 8-7.5c.8-4 2-30 2-30" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><ellipse cx="20" cy="10" rx="12" ry="3.5" stroke="currentColor" stroke-width="2"/><path d="M30 16c5 .8 7 4 7 8s-2.2 7.5-7 8.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 40 48" fill="none"><path d="M10 10c0 0 1.2 26 2 30 1.2 5.5 6.5 7.5 8 7.5s6.8-2 8-7.5c.8-4 2-30 2-30" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><ellipse cx="20" cy="10" rx="12" ry="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M30 16c5 .8 7 4 7 8s-2.2 7.5-7 8.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               </span>
               Small
             </div>
@@ -2077,7 +1757,7 @@
           <div class="choice size-choice" data-size="medium" role="button" tabindex="0">
             <div class="choice-name">
               <span class="cup-glyph medium" aria-hidden="true">
-                <svg viewBox="0 0 40 48" fill="none"><path d="M9 9c0 0 1.4 28 2.2 32 1.4 6 7 8.5 8.8 8.5s7.4-2.5 8.8-8.5c.8-4 2.2-32 2.2-32" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><ellipse cx="20" cy="9" rx="13" ry="3.8" stroke="currentColor" stroke-width="2"/><path d="M31 15c5.5 1 8 4.5 8 9s-2.5 8.5-8 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 40 48" fill="none"><path d="M9 9c0 0 1.4 28 2.2 32 1.4 6 7 8.5 8.8 8.5s7.4-2.5 8.8-8.5c.8-4 2.2-32 2.2-32" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><ellipse cx="20" cy="9" rx="13" ry="3.8" stroke="currentColor" stroke-width="1.5"/><path d="M31 15c5.5 1 8 4.5 8 9s-2.5 8.5-8 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               </span>
               Medium
             </div>
@@ -2086,7 +1766,7 @@
           <div class="choice size-choice" data-size="large" role="button" tabindex="0">
             <div class="choice-name">
               <span class="cup-glyph large" aria-hidden="true">
-                <svg viewBox="0 0 40 48" fill="none"><path d="M8 8c0 0 1.5 30 2.5 34 1.5 6.5 7.5 9 9.5 9s8-2.5 9.5-9c1-4 2.5-34 2.5-34" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><ellipse cx="20" cy="8" rx="14" ry="4" stroke="currentColor" stroke-width="2"/><path d="M32 14c6 1 9 5 9 10.5s-3 9.5-9 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 40 48" fill="none"><path d="M8 8c0 0 1.5 30 2.5 34 1.5 6.5 7.5 9 9.5 9s8-2.5 9.5-9c1-4 2.5-34 2.5-34" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><ellipse cx="20" cy="8" rx="14" ry="4" stroke="currentColor" stroke-width="1.5"/><path d="M32 14c6 1 9 5 9 10.5s-3 9.5-9 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
               </span>
               Large
             </div>
@@ -2108,43 +1788,24 @@
         <div class="cup-steam" id="cupSteam" aria-hidden="true">
           <span></span><span></span><span></span>
         </div>
-        <div class="cup-ice" id="cupIce" aria-hidden="true">
-          <span></span><span></span><span></span>
-        </div>
         <div class="live-cup" id="liveCup">
-          <svg class="live-cup-svg" viewBox="0 0 160 200" fill="none" aria-hidden="true">
-            <defs>
-              <linearGradient id="liveBodyGrad" x1="40" y1="30" x2="120" y2="180" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="rgba(240,235,227,0.14)"/>
-                <stop offset="100%" stop-color="rgba(240,235,227,0.04)"/>
-              </linearGradient>
-              <clipPath id="liveLiquidClip">
-                <path d="M42 42 C42 42 45 155 48 168 C52 182 70 188 80 188 C90 188 108 182 112 168 C115 155 118 42 118 42 Z"/>
-              </clipPath>
-            </defs>
-            <!-- Cup shell -->
-            <path d="M36 38 C36 38 40 162 44 176 C50 192 68 198 80 198 C92 198 110 192 116 176 C120 162 124 38 124 38 Z"
-              fill="url(#liveBodyGrad)"
-              stroke="rgba(240,235,227,0.38)"
-              stroke-width="2.25"/>
-            <!-- Liquid (animated via CSS height on foreign-like rect using clip) -->
-            <g clip-path="url(#liveLiquidClip)">
-              <rect class="cup-liquid" id="cupLiquid" x="40" y="200" width="80" height="0" fill="var(--liquid-colombian)">
-              </rect>
-            </g>
-            <!-- Foam waves drawn as CSS-independent overlays via second rects? keep CSS waves as absolute HTML -->
-            <!-- Rim -->
-            <ellipse cx="80" cy="38" rx="46" ry="12" fill="rgba(10,8,6,0.35)" stroke="rgba(240,235,227,0.4)" stroke-width="2.25"/>
-            <ellipse cx="80" cy="38" rx="38" ry="8" fill="none" stroke="rgba(240,235,227,0.12)" stroke-width="1.25"/>
-            <!-- Handle -->
-            <path d="M124 58 C148 62 158 78 158 96 C158 118 146 134 124 138"
-              fill="none" stroke="rgba(240,235,227,0.32)" stroke-width="7" stroke-linecap="round"/>
-            <path d="M124 58 C148 62 158 78 158 96 C158 118 146 134 124 138"
-              fill="none" stroke="rgba(8,7,6,0.85)" stroke-width="3.5" stroke-linecap="round"/>
-            <!-- Shine -->
-            <path d="M52 55 C54 95 55 135 58 170" stroke="rgba(255,255,255,0.18)" stroke-width="5" stroke-linecap="round"/>
-          </svg>
-          <div class="cup-liquid-fx" id="cupLiquidFx" aria-hidden="true"></div>
+          <img class="cup-img on" id="cupImg0" src="images/opt/empty_cup.png" alt="" draggable="false">
+          <img class="cup-img" id="cupImg1" src="images/opt/mostly_empty_cup.png" alt="" draggable="false">
+          <img class="cup-img" id="cupImg2" src="images/opt/half_full_cup.png" alt="" draggable="false">
+          <img class="cup-img" id="cupImg3" src="images/opt/full_cup.png" alt="" draggable="false">
+          <img class="cup-img solid" id="cupImgCold" src="images/opt/cold_coffee_full.png" alt="" draggable="false">
+          <img class="cup-img solid" id="cupImgCream" src="images/opt/coffee_with_cream_full.png" alt="" draggable="false">
+          <img class="cup-img solid" id="cupImgIcedMilk" src="images/opt/milk_in_cold_coffee.png" alt="" draggable="false">
+          <img class="cup-img solid" id="cupImgWater" src="images/opt/ice_water.png" alt="" draggable="false">
+          <div class="cup-video-box" id="cupVideoBox" aria-hidden="true">
+            <video id="cupVideo" src="images/opt/ice_cubes_in_cold_coffee.mp4" muted playsinline preload="auto"></video>
+          </div>
+          <div class="cup-video-box" id="creamVideoBox" aria-hidden="true">
+            <video id="creamVideo" src="images/opt/fill_with_hot_coffee_and_cream.mp4" muted playsinline preload="auto"></video>
+          </div>
+          <div class="cup-video-box" id="icedMilkVideoBox" aria-hidden="true">
+            <video id="icedMilkVideo" src="images/opt/milk_in_cold_coffee.mp4" muted playsinline preload="auto"></video>
+          </div>
         </div>
       </div>
       <p class="order-summary-text" id="cupSummary">Waiting for your picks…</p>
@@ -2154,7 +1815,6 @@
 
   <div class="order-bar" id="orderBar">
     <button class="order-btn" id="orderButton" type="button" disabled>
-      <span class="pulse-ring" aria-hidden="true"></span>
       <span id="orderBtnLabel">Place order</span>
       <span class="btn-price" id="orderBtnPrice"></span>
     </button>
@@ -2171,20 +1831,16 @@
           </clipPath>
         </defs>
         <path d="M24 26 C24 26 28 124 32 134 C38 148 52 152 60 152 C68 152 82 148 88 134 C92 124 96 26 96 26 Z"
-          fill="rgba(20,16,12,0.55)" stroke="rgba(240,235,227,0.4)" stroke-width="2"/>
+          fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.38)" stroke-width="1.75"/>
         <g clip-path="url(#pourClip)">
           <rect class="pour-fill" id="pourFill" x="26" y="145" width="68" height="0" fill="#3a2012"/>
         </g>
-        <ellipse cx="60" cy="26" rx="38" ry="10" fill="rgba(10,8,6,0.4)" stroke="rgba(240,235,227,0.4)" stroke-width="2"/>
+        <ellipse cx="60" cy="26" rx="38" ry="10" fill="rgba(0,0,0,0.4)" stroke="rgba(255,255,255,0.38)" stroke-width="1.75"/>
         <path d="M96 42 C112 46 118 58 118 72 C118 88 110 100 96 104"
-          fill="none" stroke="rgba(240,235,227,0.3)" stroke-width="5.5" stroke-linecap="round"/>
+          fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="5" stroke-linecap="round"/>
       </svg>
-      <div class="pour-splash" style="--sx:-16px;--sy:-28px"></div>
-      <div class="pour-splash"></div>
-      <div class="pour-splash"></div>
-      <div class="pour-splash"></div>
     </div>
-    <p class="pour-text">Pouring your brew…</p>
+    <p class="pour-text">Pouring your brew</p>
   </div>
 
   <section class="rating-stage" id="ratingStage">
@@ -2193,12 +1849,12 @@
     <p class="rating-sub">Rate your coffee and barista — then tip if you'd like.</p>
 
     <div class="rating-group">
-      <h3>How was your coffee?</h3>
+      <h3>Your coffee</h3>
       <div class="stars" id="coffeeRating" role="radiogroup" aria-label="Coffee rating"></div>
     </div>
 
     <div class="rating-group">
-      <h3>How was your barista?</h3>
+      <h3>Your barista</h3>
       <div class="stars" id="baristaRating" role="radiogroup" aria-label="Barista rating"></div>
     </div>
 
@@ -2222,7 +1878,6 @@
 
   <section class="success-stage" id="successStage">
     <div class="success-burst" aria-hidden="true">
-      <div class="confetti" id="confetti"></div>
       <div class="ring"></div>
       <div class="ring2"></div>
       <div class="check">
@@ -2259,10 +1914,36 @@
       colombian: "#3a2012",
       breakfast: "#6e4324",
       decaf: "#4c3828",
-      water: "#6eb0cc"
+      water: "#7cc4e8"
     };
 
-    const prices = { small: 3.95, medium: 4.95, large: 5.95 };
+    // Defaults — overridden by prices.csv so prices can be edited without touching code.
+    // Sizes are base prices; hot/iced and milk/half-half are add-ons summed on top.
+    const prices = {
+      small: 3.95, medium: 4.95, large: 5.95, water: 0,
+      hot: 0, iced: 0, milk: 0, "half-half": 0
+    };
+
+    function currentTotal() {
+      if (orderState.coffee === "water") return prices.water;
+      if (!orderState.size) return null;
+      let total = prices[orderState.size];
+      if (orderState.temperature && prices[orderState.temperature] != null) total += prices[orderState.temperature];
+      if (orderState.milk && orderState.milk !== "none" && prices[orderState.milk] != null) total += prices[orderState.milk];
+      return total;
+    }
+
+    fetch("prices.csv")
+      .then(r => (r.ok ? r.text() : ""))
+      .then(text => {
+        text.trim().split(/\r?\n/).slice(1).forEach(line => {
+          const [item, price] = line.split(",").map(s => s.trim());
+          const p = parseFloat(price);
+          if (item && item in prices && !isNaN(p)) prices[item] = p;
+        });
+        updateCup();
+      })
+      .catch(() => { /* offline or file:// — keep defaults */ });
 
     let orderState = {
       coffee: null, temperature: null, milk: null, size: null,
@@ -2276,12 +1957,25 @@
     const orderBar = document.getElementById("orderBar");
     const orderButton = document.getElementById("orderButton");
     const pourOverlay = document.getElementById("pourOverlay");
-    const cupLiquid = document.getElementById("cupLiquid");
-    const cupLiquidFx = document.getElementById("cupLiquidFx");
+    const cupImages = [
+      document.getElementById("cupImg0"),
+      document.getElementById("cupImg1"),
+      document.getElementById("cupImg2"),
+      document.getElementById("cupImg3")
+    ];
     const pourFill = document.getElementById("pourFill");
     const liveCup = document.getElementById("liveCup");
     const cupSteam = document.getElementById("cupSteam");
-    const cupIce = document.getElementById("cupIce");
+    const cupImgCold = document.getElementById("cupImgCold");
+    const cupImgCream = document.getElementById("cupImgCream");
+    const cupImgIcedMilk = document.getElementById("cupImgIcedMilk");
+    const cupImgWater = document.getElementById("cupImgWater");
+    const cupVideo = document.getElementById("cupVideo");
+    const cupVideoBox = document.getElementById("cupVideoBox");
+    const creamVideo = document.getElementById("creamVideo");
+    const creamVideoBox = document.getElementById("creamVideoBox");
+    const icedMilkVideo = document.getElementById("icedMilkVideo");
+    const icedMilkVideoBox = document.getElementById("icedMilkVideoBox");
     const cupSummary = document.getElementById("cupSummary");
     const cupPrice = document.getElementById("cupPrice");
     const cupRingFill = document.getElementById("cupRingFill");
@@ -2310,8 +2004,8 @@
       document.documentElement.style.setProperty("--spot-y", (my / window.innerHeight * 100) + "%");
 
       if (heroCupParallax && !hero.classList.contains("exiting") && hero.style.display !== "none") {
-        const dx = (mx / window.innerWidth - 0.5) * 16;
-        const dy = (my / window.innerHeight - 0.5) * 12;
+        const dx = (mx / window.innerWidth - 0.5) * 12;
+        const dy = (my / window.innerHeight - 0.5) * 9;
         heroCupParallax.style.transform = `translate(${dx}px, ${dy}px)`;
       }
     });
@@ -2339,8 +2033,6 @@
         btn.dataset.rating = i;
         btn.setAttribute("aria-label", i + (i === 1 ? " star" : " stars"));
         btn.innerHTML = `
-          <span class="sparkle"></span><span class="sparkle"></span>
-          <span class="sparkle"></span><span class="sparkle"></span>
           <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
         `;
         container.appendChild(btn);
@@ -2348,19 +2040,6 @@
     }
     buildStars("coffeeRating");
     buildStars("baristaRating");
-
-    // Ripple on coffee options
-    function addRipple(el, e) {
-      const rect = el.getBoundingClientRect();
-      const ripple = document.createElement("span");
-      ripple.className = "ripple";
-      const size = Math.max(rect.width, rect.height);
-      ripple.style.width = ripple.style.height = size + "px";
-      ripple.style.left = (e.clientX - rect.left - size / 2) + "px";
-      ripple.style.top = (e.clientY - rect.top - size / 2) + "px";
-      el.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 600);
-    }
 
     // Start
     document.getElementById("startBtn").addEventListener("click", () => {
@@ -2389,15 +2068,11 @@
 
     function bindSelect(selector, onPick) {
       document.querySelectorAll(selector).forEach(el => {
-        const activate = (e) => {
-          if (el.classList.contains("coffee-option") && e && e.clientX) addRipple(el, e);
-          onPick(el);
-        };
-        el.addEventListener("click", activate);
+        el.addEventListener("click", () => onPick(el));
         el.addEventListener("keydown", e => {
           if (e.key === "Enter" || e.key === " ") {
             e.preventDefault();
-            activate();
+            onPick(el);
           }
         });
       });
@@ -2430,14 +2105,32 @@
           stepTemp.classList.add("visible");
           setTimeout(() => stepMilk.classList.add("visible"), 100);
         });
-        document.querySelectorAll(".temperature-choice, .milk-choice").forEach(n => n.classList.remove("selected"));
-        orderState.temperature = null;
-        orderState.milk = null;
-        scrollToStep(stepTemp);
+        // Keep any temp/milk picks already made — every step is visible up front
+        const pickedTemp = document.querySelector(".temperature-choice.selected");
+        const pickedMilk = document.querySelector(".milk-choice.selected");
+        orderState.temperature = pickedTemp ? pickedTemp.dataset.temperature : null;
+        orderState.milk = pickedMilk ? pickedMilk.dataset.milk : null;
       }
 
       updateCup();
       checkOrderReady();
+    });
+
+    // Drink transitions: a clip plays once, then its finished-drink photo holds.
+    // "ice" fires on iced black; "icedMilk" on iced + milk; "cream" on hot + milk.
+    const specials = {
+      ice: { video: cupVideo, box: cupVideoBox, img: cupImgCold },
+      cream: { video: creamVideo, box: creamVideoBox, img: cupImgCream },
+      icedMilk: { video: icedMilkVideo, box: icedMilkVideoBox, img: cupImgIcedMilk }
+    };
+    let special = null;          // which sequence owns the cup right now
+    let specialPhase = "off";    // "video" while playing, "done" holding the photo
+
+    Object.values(specials).forEach(s => {
+      s.video.addEventListener("ended", () => {
+        specialPhase = "done";
+        updateCup();
+      });
     });
 
     bindSelect(".temperature-choice", el => {
@@ -2492,11 +2185,35 @@
       if (size) fill += 23;
 
       const color = coffee ? liquidColors[coffee] : liquidColors.colombian;
-      // Live cup SVG liquid: clip spans y 42→188 (146px)
-      setSvgFill(cupLiquid, fill, 188, 146, color);
-      if (cupLiquidFx) cupLiquidFx.style.height = fill + "%";
-      liveCup.classList.toggle("glowing", fill > 0);
-      liveCup.classList.toggle("has-milk", milk === "milk" || milk === "half-half");
+      // Live cup photo: empty → splash → half → full as selections land.
+      // A matching special sequence takes over when the drink calls for one.
+      const hasCream = milk === "milk" || milk === "half-half";
+      const want = isWater ? null
+        : temperature === "iced" ? (hasCream ? "icedMilk" : "ice")
+        : temperature === "hot" && hasCream ? "cream"
+        : null;
+      if (want !== special) {
+        if (special) specials[special].video.pause();
+        special = want;
+        if (special) {
+          specialPhase = "video";
+          const v = specials[special].video;
+          v.currentTime = 0;
+          const p = v.play();
+          if (p) p.catch(() => { specialPhase = "done"; updateCup(); });
+        } else {
+          specialPhase = "off";
+        }
+      }
+      // Hot + black is already the finished drink — jump straight to the full cup
+      const level = (temperature === "hot" && milk === "none" && !isWater) ? 3
+        : fill >= 80 ? 3 : fill >= 45 ? 2 : fill >= 10 ? 1 : 0;
+      Object.entries(specials).forEach(([name, s]) => {
+        s.box.classList.toggle("on", special === name && specialPhase === "video");
+        s.img.classList.toggle("on", special === name && specialPhase === "done");
+      });
+      cupImgWater.classList.toggle("on", isWater);
+      cupImages.forEach((img, i) => img.classList.toggle("on", !special && !isWater && i === level));
 
       mobileFill.style.background = color;
       mobileFill.style.height = fill + "%";
@@ -2505,7 +2222,7 @@
       setSvgFill(pourFill, 0, 145, 117, color);
       pourFill.dataset.fullColor = color;
       document.getElementById("pourStream").style.background =
-        "linear-gradient(180deg, var(--copper), " + color + ")";
+        "linear-gradient(180deg, rgba(255,255,255,0.5), " + color + ")";
 
       // Progress ring (circumference ≈ 628)
       const offset = 628 - (628 * progress) / 100;
@@ -2514,12 +2231,10 @@
 
       liveCup.classList.remove("size-small", "size-medium", "size-large");
       if (size) liveCup.classList.add("size-" + size);
-      liveCup.classList.toggle("filled", fill > 40);
 
       cupSteam.classList.toggle("active", temperature === "hot" && !isWater);
-      cupIce.classList.toggle("active", temperature === "iced" && !isWater);
 
-      const orderTotal = coffee === "water" ? 0 : (size ? prices[size] : null);
+      const orderTotal = currentTotal();
 
       if (!coffee) {
         cupSummary.textContent = "Waiting for your picks…";
@@ -2644,7 +2359,7 @@
         tipButtons.forEach(b => b.classList.remove("selected"));
         btn.classList.add("selected");
         const tipValue = btn.dataset.tip;
-        const orderTotal = orderState.coffee === "water" ? 0 : prices[orderState.size];
+        const orderTotal = currentTotal() || 0;
 
         if (tipValue === "custom") {
           customTipInput.classList.add("show");
@@ -2665,21 +2380,6 @@
       updateTipDisplay();
     });
 
-    function spawnConfetti() {
-      const box = document.getElementById("confetti");
-      box.innerHTML = "";
-      for (let i = 0; i < 18; i++) {
-        const bit = document.createElement("i");
-        const angle = (i / 18) * Math.PI * 2;
-        const dist = 40 + Math.random() * 70;
-        bit.style.setProperty("--cx", Math.cos(angle) * dist + "px");
-        bit.style.setProperty("--cy", Math.sin(angle) * dist + "px");
-        bit.style.setProperty("--cr", (Math.random() * 200 - 100) + "deg");
-        bit.style.animationDelay = (Math.random() * 0.15) + "s";
-        box.appendChild(bit);
-      }
-    }
-
     document.getElementById("submitRating").addEventListener("click", () => {
       const err = document.getElementById("ratingError");
       if (orderState.coffeeRating === 0 || orderState.baristaRating === 0) {
@@ -2690,7 +2390,7 @@
 
       const coffeeName = coffeeNames[orderState.coffee];
       const sizeName = orderState.size.charAt(0).toUpperCase() + orderState.size.slice(1);
-      const orderTotal = orderState.coffee === "water" ? 0 : prices[orderState.size];
+      const orderTotal = currentTotal() || 0;
       const finalTotal = orderTotal + orderState.tip;
 
       let tempDisplay = "";
@@ -2723,7 +2423,6 @@
 
       ratingStage.classList.remove("active");
       successStage.classList.add("active");
-      spawnConfetti();
       // Retrigger check animation
       const burst = successStage.querySelector(".success-burst");
       burst.querySelectorAll(".ring, .ring2, .check").forEach(el => {
@@ -2791,11 +2490,11 @@
       customTipAmount.value = "";
       tipDisplay.textContent = "";
       orderButton.disabled = true;
-      stepTemp.hidden = true;
-      stepMilk.hidden = true;
-      stepTemp.classList.remove("visible");
-      stepMilk.classList.remove("visible");
-      sizeStepNum.textContent = "03";
+      customerName.value = "";
+      localStorage.removeItem("elemental-brew-name");
+      stepTemp.hidden = false;
+      stepMilk.hidden = false;
+      sizeStepNum.textContent = "05";
       document.getElementById("ratingError").classList.remove("show");
       orderBtnPrice.textContent = "";
 
