@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kiosk control</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #111; color: #eee;
+         margin: 0; padding: 24px 16px; }
+  h1 { font-size: 18px; font-weight: 600; margin: 0 0 16px; }
+  button { display: block; width: 100%; font: inherit; font-size: 20px; padding: 18px; margin: 10px 0;
+           border: 0; border-radius: 12px; background: #2a2a2a; color: #eee; }
+  button.active { background: #3a7bd5; color: #fff; }
+  #status { color: #888; font-size: 14px; margin-top: 16px; }
+</style>
+</head>
+<body>
+<h1>iPad is showing</h1>
+<div id="buttons"></div>
+<div id="status">connecting…</div>
+<script>
+  var buttons = document.getElementById('buttons');
+  var status = document.getElementById('status');
+  function render(state) {
+    buttons.innerHTML = '';
+    state.apps.forEach(function (name) {
+      var b = document.createElement('button');
+      b.textContent = name;
+      if (name === state.app) b.className = 'active';
+      b.onclick = function () { fetch('/show/' + name).then(function (r) { return r.json(); }).then(render); };
+      buttons.appendChild(b);
+    });
+    status.textContent = 'current: ' + state.app + ' → ' + state.url;
+  }
+  new EventSource('/events').onmessage = function (e) { render(JSON.parse(e.data)); };
+</script>
+</body>
+</html>
