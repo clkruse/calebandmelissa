@@ -1,4 +1,6 @@
-const API_BASE = location.hostname === 'localhost' ? '' : 'https://sky-map-api.caleb-krs.workers.dev/';
+// Served over plain http (the home kiosk server or proxy.py) the page's own
+// origin proxies the data routes. On the public https site, use the worker.
+const API_BASE = location.protocol === 'http:' ? '' : 'https://sky-map-api.caleb-krs.workers.dev';
 
 let rateLimitRemaining = null;
 

@@ -9,11 +9,15 @@
 //   GET /events        -> Server-Sent Events stream of app changes
 //   GET /kiosk/        -> tap-to-switch control page (handy from a phone)
 //
+// It also proxies the sky-map's data routes (/api, /db, /lookup, /jetapi)
+// so the planes page runs without the Cloudflare worker. See skyproxy.js.
+//
 // Add a new app: drop a page in the repo, add a line to APPS, restart.
 
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const skyproxy = require('./skyproxy');
 
 const PORT = Number(process.env.PORT) || 3000;
 const ROOT = path.resolve(__dirname, '..');
@@ -26,6 +30,7 @@ const APPS = {
 };
 
 let current = APPS[DEFAULT_APP] ? DEFAULT_APP : Object.keys(APPS)[0];
+skyproxy.init(ROOT);
 const listeners = new Set();
 
 const MIME = {
@@ -117,6 +122,8 @@ const server = http.createServer((req, res) => {
     req.on('close', () => { clearInterval(ping); listeners.delete(res); });
     return;
   }
+
+  if (skyproxy.handle(req, res, url)) return;
 
   if (req.method !== 'GET' && req.method !== 'HEAD') {
     return json(res, 405, { error: 'method not allowed' });

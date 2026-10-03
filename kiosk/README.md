@@ -32,6 +32,13 @@ Endpoints:
 | `/events` | Server-Sent Events stream the iPad listens to |
 | `/kiosk/` | tap-to-switch control page, handy from a phone |
 
+The server also proxies the sky map's data routes (`/api`, `/db`, `/lookup`,
+`/jetapi`), see `skyproxy.js`, so the planes page gets its data straight from
+the laptop instead of the Cloudflare worker. Put the OpenSky OAuth client in
+`sky-map/credentials.json` (gitignored) as `{"clientId": …, "clientSecret": …}`
+for the higher authenticated rate limit. Without it OpenSky is queried
+anonymously, which still works but polls less often.
+
 Apps are the `APPS` map at the top of `server.js`. To add one, drop a page in
 the repo, add a line there, include the kiosk script in the page, restart.
 
