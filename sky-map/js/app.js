@@ -42,6 +42,9 @@ const TRAIL_BUFFER_SIZE = 40;
 const TELEPORT_THRESHOLD_DEG = 0.3;
 const MIN_BLEND_SEC = 2;  // minimum seconds to fade position correction
 const MAX_BLEND_SEC = 8;  // cap for very large corrections
+const MAX_EXTRAP_SEC = 90;        // stop dead-reckoning past this; data is stale
+const STALE_CLEAR_MS = 5 * 60e3;  // drop planes entirely after this long without data
+let lastPollError = null;         // message of the most recent failed poll, or null
 
 function startPolling() {
   // Pre-fetch the type code database (non-blocking)
@@ -64,6 +67,7 @@ async function poll() {
       currentPlanes = [];
       planeState = {};
       lastPollTime = Date.now();
+      lastPollError = null;
       updatePlanes({ type: 'FeatureCollection', features: [] });
       showNoPlanes(true);
       updateStatusBar(0);
@@ -72,13 +76,6 @@ async function poll() {
 
     const parsed = data.states.map(parseStateVector);
     const filtered = filterByRadius(parsed, CENTER_LAT, CENTER_LON, RADIUS_KM);
-
-    // Diagnostic: log category distribution on first poll
-    if (lastPollTime === 0) {
-      const cats = {};
-      filtered.forEach(p => { const c = p.category ?? 'null'; cats[c] = (cats[c] || 0) + 1; });
-      console.log('Category distribution:', cats, '| sample sv length:', data.states[0]?.length);
-    }
 
     // Snapshot the *displayed* position so the next cycle's correction
     // starts exactly where the user saw the plane — no snap-back.
@@ -206,6 +203,7 @@ async function poll() {
 
     currentPlanes = filtered;
     lastPollTime = Date.now();
+    lastPollError = null;
 
     // Resolve aircraft types via tar1090-db
     resolveTypes(filtered);
@@ -225,6 +223,14 @@ async function poll() {
     }
   } catch (err) {
     console.error('Poll error:', err.message);
+    lastPollError = err.message;
+    if (lastPollTime > 0 && Date.now() - lastPollTime > STALE_CLEAR_MS) {
+      currentPlanes = [];
+      planeState = {};
+      updatePlanes({ type: 'FeatureCollection', features: [] });
+      showNoPlanes(true, 'Flight data unavailable');
+    }
+    updateStatusBar(currentPlanes.length);
     if (err.retryAfter) {
       pollInterval = err.retryAfter * 1000;
       clearInterval(pollTimer);
@@ -236,7 +242,8 @@ async function poll() {
 
 function animateLoop() {
   if (currentPlanes.length > 0 && lastPollTime > 0) {
-    const dtSeconds = (Date.now() - lastPollTime) / 1000;
+    // Freeze positions once data is stale rather than flying planes off in straight lines
+    const dtSeconds = Math.min((Date.now() - lastPollTime) / 1000, MAX_EXTRAP_SEC);
     const geojson = interpolatedGeoJSON(currentPlanes, dtSeconds);
     updatePlanes(geojson);
     updateSplitFlap(geojson);
@@ -292,7 +299,7 @@ function interpolatedGeoJSON(planes, dtSeconds) {
 
       const cached = typeCache[p.icao24];
       const category = (cached?.cat != null) ? cached.cat : p.category;
-      const label = cached?.type || p.callsign;
+      const label = shortTypeName(cached?.type) || p.callsign;
 
       return {
         type: 'Feature',
@@ -383,7 +390,6 @@ async function _walkChunkTree(chunkName, entries, typeCodeDb, resolved) {
       const cat = classifyFromDb(record, typeCodeDb);
       typeCache[icao] = { cat, type: record[3] || null, reg: record[0] || null };
       resolved.add(icao);
-      if (cat != null) console.log(`Type resolved: ${icao} → cat ${cat} (${record[3] || record[1]})`);
     } else {
       remaining.push({ icao, upper });
     }
@@ -413,7 +419,9 @@ let _routesInFlight = false;
 
 function resolveRoutes(planes) {
   const needed = planes
-    .filter(p => p.callsign && !(p.callsign in routeCache))
+    .filter(p => p.callsign && !(p.callsign in routeCache) && !isRegistrationCallsign(p.callsign))
+    .sort((a, b) => haversineDistance(CENTER_LAT, CENTER_LON, a.lat, a.lon)
+                  - haversineDistance(CENTER_LAT, CENTER_LON, b.lat, b.lon))
     .map(p => p.callsign);
   // Deduplicate
   const unique = [...new Set(needed)];
@@ -447,6 +455,11 @@ async function _resolveRoutesAsync(callsigns) {
   // (they'll be picked up on the next poll cycle)
 }
 
+// US tail numbers used as callsigns (N12345, N361JL) never resolve to a route.
+function isRegistrationCallsign(cs) {
+  return /^N\d{1,5}[A-Z]{0,2}$/.test(cs);
+}
+
 // 4-tier adaptive polling based on API rate limit headers
 function adaptivePollInterval(remaining) {
   if (remaining == null || remaining > 500) return POLL_INTERVAL_MS; // plenty
@@ -455,17 +468,24 @@ function adaptivePollInterval(remaining) {
   return Math.max(POLL_INTERVAL_MS, 60000);                          // critical
 }
 
-function showNoPlanes(show) {
-  document.getElementById('no-planes-overlay').classList.toggle('visible', show);
+function showNoPlanes(show, text = 'No planes found') {
+  const overlay = document.getElementById('no-planes-overlay');
+  overlay.querySelector('span').textContent = text;
+  overlay.classList.toggle('visible', show);
 }
 
 function updateStatusBar(count) {
-  const time = new Date().toLocaleTimeString();
-  let text = `${count} aircraft  ·  updated ${time}`;
-  if (pollInterval > POLL_INTERVAL_MS) {
+  const bar = document.getElementById('status-bar');
+  const time = lastPollTime ? new Date(lastPollTime).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) : '—';
+  let text = `${count} aircraft within ${RADIUS_MI} mi  ·  updated ${time}`;
+  if (lastPollError) {
+    const ageSec = lastPollTime ? Math.round((Date.now() - lastPollTime) / 1000) : null;
+    text = `Flight data unavailable (${lastPollError})` + (ageSec != null ? `  ·  last update ${ageSec}s ago` : '');
+  } else if (pollInterval > POLL_INTERVAL_MS) {
     text += `  ·  polling every ${pollInterval / 1000}s (rate limited)`;
   }
-  document.getElementById('status-bar').textContent = text;
+  bar.textContent = text;
+  bar.classList.toggle('stale', !!lastPollError);
 }
 
 // Pause polling/animation when tab is hidden, resume on visible

@@ -5,11 +5,17 @@
 const SPLITFLAP_ROWS = [
   { id: 'sf-flight', label: 'FLIGHT', chars: 8 },
   { id: 'sf-type',   label: 'TYPE',   chars: 20 },
+  { id: 'sf-route',  label: 'ROUTE',  chars: 11 },
+  { id: 'sf-where',  label: 'WHERE',  chars: 14 },
   { id: 'sf-data',   label: 'DATA',   chars: 22 },
 ];
 
+// Keep showing the current plane unless another is clearly closer (avoids
+// flicker when two aircraft are a similar distance from home).
+const SF_SWITCH_RATIO = 0.8;
+
 // Character alphabet — cells cycle through this sequence to reach the target
-const SF_ALPHABET = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-→°·.';
+const SF_ALPHABET = ' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-→°·.↑↓';
 const SF_CHAR_INDEX = {};
 for (let i = 0; i < SF_ALPHABET.length; i++) SF_CHAR_INDEX[SF_ALPHABET[i]] = i;
 
@@ -95,19 +101,28 @@ function updateSplitFlap(geojson) {
   if (now - _sfLastUpdate < 300) return;
   _sfLastUpdate = now;
 
-  const center = map.getCenter();
+  // Distances are measured from home, not the map center, so panning the
+  // map doesn't change which aircraft the board describes.
   let nearest = null;
-  let nearestDist = Infinity;
+  let nearestKm = Infinity;
+  let currentKm = Infinity;
+  const currentIcao = _sfCachedNearest?.properties.icao24;
 
   for (const f of geojson.features) {
+    if (f.properties.onGround) continue;
     const [lon, lat] = f.geometry.coordinates;
-    const dx = lon - center.lng;
-    const dy = lat - center.lat;
-    const dist = dx * dx + dy * dy;
-    if (dist < nearestDist) {
-      nearestDist = dist;
+    const km = haversineDistance(CENTER_LAT, CENTER_LON, lat, lon);
+    if (f.properties.icao24 === currentIcao) currentKm = km;
+    if (km < nearestKm) {
+      nearestKm = km;
       nearest = f;
     }
+  }
+
+  if (nearest && currentIcao && nearest.properties.icao24 !== currentIcao
+      && currentKm < Infinity && nearestKm > currentKm * SF_SWITCH_RATIO) {
+    nearest = geojson.features.find(f => f.properties.icao24 === currentIcao);
+    nearestKm = currentKm;
   }
 
   _sfCachedNearest = nearest;
@@ -115,19 +130,31 @@ function updateSplitFlap(geojson) {
   if (!nearest) {
     _sfSetRow('sf-flight', '--------');
     _sfSetRow('sf-type',   '--------------------');
+    _sfSetRow('sf-route',  '-----------');
+    _sfSetRow('sf-where',  '--------------');
     _sfSetRow('sf-data',   '----------------------');
     return;
   }
 
-  _sfRenderPlane(nearest);
+  _sfRenderPlane(nearest, nearestKm);
 }
 
-function _sfRenderPlane(feature) {
+function _sfRenderPlane(feature, distKm) {
   const p = feature.properties;
+  const [lon, lat] = feature.geometry.coordinates;
 
   const flight = (p.callsign || p.icao24 || '').toUpperCase().padEnd(8).slice(0, 8);
   const cached = typeCache[p.icao24];
-  const typeName = (cached?.type || '').toUpperCase().padEnd(20).slice(0, 20);
+  const typeName = (shortTypeName(cached?.type, 20) || '').toUpperCase().padEnd(20).slice(0, 20);
+
+  const route = (routeCache[p.callsign] || '').toUpperCase().padEnd(11).slice(0, 11);
+
+  const miles = distKm / 1.60934;
+  const bearing = bearingDeg(CENTER_LAT, CENTER_LON, lat, lon);
+  const distStr = miles < 10 ? miles.toFixed(1) : Math.round(miles).toString();
+  const vr = p.verticalRate || 0;
+  const trend = vr > 1.5 ? '↑' : vr < -1.5 ? '↓' : '→';
+  const where = `${distStr} MI ${compassPoint(bearing)} ${trend}`.padEnd(14).slice(0, 14);
 
   const altFt = p.altitude != null ? Math.round(p.altitude * 3.28084 / 100) * 100 : 0;
   const spdKt = p.velocity != null ? Math.round(p.velocity * 1.94384) : 0;
@@ -136,6 +163,8 @@ function _sfRenderPlane(feature) {
 
   _sfSetRow('sf-flight', flight);
   _sfSetRow('sf-type', typeName);
+  _sfSetRow('sf-route', route);
+  _sfSetRow('sf-where', where);
   _sfSetRow('sf-data', data);
 }
 

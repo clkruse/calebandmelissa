@@ -95,6 +95,11 @@ function initMap() {
     });
   });
 
+  // Kiosk: after someone pans or zooms and walks away, drift back home.
+  map.on('movestart', (e) => { if (e.originalEvent) noteInteraction(); });
+  map.on('click', noteInteraction);
+  map.on('touchstart', noteInteraction);
+
   map.on('click', 'planes-layer', onPlaneClick);
   map.on('mouseenter', 'planes-layer', () => (map.getCanvas().style.cursor = 'pointer'));
   map.on('mouseleave', 'planes-layer', () => (map.getCanvas().style.cursor = ''));
@@ -104,6 +109,26 @@ function initMap() {
     const features = map.queryRenderedFeatures(e.point, { layers: ['planes-layer'] });
     if (!features.length) dismissPanel();
   });
+}
+
+const HOME_VIEW = { center: [CENTER_LON, CENTER_LAT], zoom: 8.5, bearing: 0, pitch: 0 };
+const IDLE_RECENTER_MS = 90 * 1000;
+let idleTimer = null;
+
+function noteInteraction() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(recenterHome, IDLE_RECENTER_MS);
+}
+
+function recenterHome() {
+  idleTimer = null;
+  dismissPanel();
+  const c = map.getCenter();
+  const moved = Math.abs(c.lng - HOME_VIEW.center[0]) > 1e-4
+    || Math.abs(c.lat - HOME_VIEW.center[1]) > 1e-4
+    || Math.abs(map.getZoom() - HOME_VIEW.zoom) > 0.01
+    || map.getBearing() !== 0 || map.getPitch() !== 0;
+  if (moved) map.easeTo({ ...HOME_VIEW, duration: 1500 });
 }
 
 function addLayers() {
@@ -141,8 +166,9 @@ function addLayers() {
       // Callsign labels
       'text-field': ['get', 'label'],
       'text-font': ['DIN Pro Medium', 'Arial Unicode MS Regular'],
-      'text-size': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 10, 12, 12],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 7, 0, 8, 12, 12, 14],
       'text-offset': [0, 1.8],
+      'text-max-width': 12,
       'text-rotation-alignment': 'viewport',
       'text-allow-overlap': false,
       'text-optional': true,
@@ -307,34 +333,46 @@ function showInfoPanel(props) {
     }
   } else {
     fetchAircraftInfo(props.icao24).then((ac) => {
+      if (!ac || selectedIcao !== props.icao24) return;
       const el = document.getElementById('info-type');
-      if (el && ac) el.textContent = ac.type || '—';
+      if (el) el.textContent = ac.type || ac.icao_type || '—';
+      if (ac.registration) {
+        const regEl = document.getElementById('info-reg');
+        if (regEl) regEl.textContent = ac.registration;
+        loadPhoto(ac.registration);
+      }
     }).catch(() => {});
   }
 
-  fetchRouteInfo(props.callsign).then((route) => {
-    const el = document.getElementById('info-route');
-    if (el && route) {
-      const orig = route.origin?.iata_code || route.origin?.icao_code || '?';
-      const dest = route.destination?.iata_code || route.destination?.icao_code || '?';
-      el.textContent = `${orig} → ${dest}`;
-    }
-  }).catch(() => {});
+  const knownRoute = routeCache[props.callsign];
+  if (knownRoute) {
+    document.getElementById('info-route').textContent = knownRoute;
+  } else if (knownRoute === undefined && props.callsign) {
+    fetchRouteInfo(props.callsign).then((route) => {
+      const el = document.getElementById('info-route');
+      if (el && route) {
+        const orig = route.origin?.iata_code || route.origin?.icao_code || '?';
+        const dest = route.destination?.iata_code || route.destination?.icao_code || '?';
+        el.textContent = `${orig} → ${dest}`;
+      }
+    }).catch(() => {});
+  }
 
   // Fetch aircraft photo via JetAPI (needs registration)
-  const reg = cached?.reg;
-  if (reg) {
-    fetchAircraftPhoto(reg).then((photo) => {
-      const wrap = document.getElementById('info-photo-wrap');
-      if (!wrap || !photo) return;
-      wrap.innerHTML = `
-        <a href="${photo.link}" target="_blank" rel="noopener">
-          <img src="${photo.thumbnail}" alt="${photo.aircraft || 'Aircraft photo'}">
-          <span class="photo-credit">${photo.photographer || ''}</span>
-        </a>
-      `;
-    }).catch(() => {});
-  }
+  if (cached?.reg) loadPhoto(cached.reg);
+}
+
+function loadPhoto(reg) {
+  fetchAircraftPhoto(reg).then((photo) => {
+    const wrap = document.getElementById('info-photo-wrap');
+    if (!wrap || !photo) return;
+    wrap.innerHTML = `
+      <a href="${photo.link}" target="_blank" rel="noopener">
+        <img src="${photo.thumbnail}" alt="${photo.aircraft || 'Aircraft photo'}">
+        <span class="photo-credit">${photo.photographer || ''}</span>
+      </a>
+    `;
+  }).catch(() => {});
 }
 
 // Update the dynamic values in the info panel (called from animation loop)

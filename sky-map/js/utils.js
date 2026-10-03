@@ -83,6 +83,35 @@ function extrapolatePosition(lat, lon, velocity, trueTrack, dtSeconds) {
   return [lon + dLon, lat + dLat];
 }
 
+// Initial bearing from point 1 to point 2, degrees clockwise from north.
+function bearingDeg(lat1, lon1, lat2, lon2) {
+  const φ1 = toRad(lat1), φ2 = toRad(lat2), Δλ = toRad(lon2 - lon1);
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  return ((Math.atan2(y, x) * 180) / Math.PI + 360) % 360;
+}
+
+const COMPASS_POINTS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+function compassPoint(deg) {
+  return COMPASS_POINTS[Math.round(deg / 45) % 8];
+}
+
+// Shorten verbose tar1090-db type names for map labels and the board.
+// "PIPER PA-28-140/150/160/180" -> "PIPER PA-28-140"
+function shortTypeName(name, max = 24) {
+  if (!name) return name;
+  let s = name
+    .replace(/\/[^\s]*/g, '')      // drop "/150/160/180" variant lists
+    .replace(/\s*\([^)]*\)?/g, '')  // drop parenthetical notes
+    .replace(/\s+/g, ' ').trim();
+  if (s.length > max) {
+    // Cut at a word boundary so we never end mid-word
+    const cut = s.lastIndexOf(' ', max);
+    s = cut > 0 ? s.slice(0, cut) : s.slice(0, max);
+  }
+  return s;
+}
+
 // Linear interpolation, null-safe.
 function lerp(a, b, t) {
   if (a == null || b == null) return b;
