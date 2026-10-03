@@ -1,6 +1,0 @@
-credentials.json
-node_modules/
-db-cache/
-.DS_Store
-worker/node_modules/
-worker/.wrangler/
